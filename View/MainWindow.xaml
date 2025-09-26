@@ -14,5 +14,16 @@
                 <ColumnDefinition Width="1*" />
                 <ColumnDefinition Width="140" />
             </Grid.ColumnDefinitions>
+        <Rectangle Fill="{StaticResource LeftRect}"/>
+        <Rectangle Fill="{StaticResource TaskListBackground}" Grid.Column="1"/>
+        <Grid Grid.Column="1">
+            <Grid.RowDefinitions>
+                <RowDefinition Height="68"/>
+                <RowDefinition Height="60"/>
+                <RowDefinition Height="1*"/>
+            </Grid.RowDefinitions>
         </Grid>
+        <Rectangle Fill="{StaticResource TaskStatusBackground}" Grid.Column="3"/>
+    </Grid>
 </Window>
+    
