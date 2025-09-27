@@ -11,9 +11,9 @@ namespace lab_1_new.ViewModel
     {
         private readonly Action _execute;
         private readonly Func<bool> _canExecute;
-        public RelayCommand(Action _execute, Func<bool> canExecute = null)
+        public RelayCommand(Action execute, Func<bool> canExecute = null)
         {
-            _execute = _execute ?? throw new ArgumentNullException(nameof(_execute));
+            _execute = execute ?? throw new ArgumentNullException(nameof(execute));
             _canExecute = canExecute;
         }
         public event EventHandler CanExecuteChanged

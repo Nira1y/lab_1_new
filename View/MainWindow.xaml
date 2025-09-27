@@ -4,9 +4,13 @@
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:lab_1_new"
+        xmlns:vm="clr-namespace:lab_1_new.ViewModel"
         mc:Ignorable="d"
         Title="MainWindow" Height="832" Width="1280"
         WindowStartupLocation = "CenterScreen">
+    <Window.DataContext>
+        <vm:MainWindiowViewModel/>
+    </Window.DataContext>
         <Grid>
             <Grid.ColumnDefinitions>
                 <ColumnDefinition Width="88" />
@@ -14,7 +18,7 @@
                 <ColumnDefinition Width="1*" />
                 <ColumnDefinition Width="140" />
             </Grid.ColumnDefinitions>
-        <Rectangle Fill="{StaticResource LeftRect}"/>
+        <Rectangle Fill="{StaticResource AccentLight}"/>
         <Rectangle Fill="{StaticResource TaskListBackground}" Grid.Column="1"/>
         <Grid Grid.Column="1">
             <Grid.RowDefinitions>
@@ -22,6 +26,80 @@
                 <RowDefinition Height="60"/>
                 <RowDefinition Height="1*"/>
             </Grid.RowDefinitions>
+            <Label Style="{StaticResource Heading1}" Content="Задачи"/>
+            <Button Style="{StaticResource RoundAccentButton}"
+                    Command="{Binding IOpenNewWindow}"/>
+            <TextBox x:Name="TaskSearchBox"
+                Style="{StaticResource TaskSearchBox}"
+                Grid.Row="1"
+                Margin="20 0"/>
+            <Label IsHitTestVisible="False"
+                   Content="Найти задачу..."
+                   Grid.Row="1"
+                   VerticalAlignment="Center"
+                   Foreground="{StaticResource AccentLight}"
+                   Margin="40 0 0 0"
+                   Visibility="{Binding Text.IsEmpty, ElementName=TaskSearchBox, Converter={StaticResource BooleanToVisibilityConverter}}"/>
+        </Grid>
+        <Grid Grid.Column="2">
+            <Grid.RowDefinitions>
+                <RowDefinition Height="230"/>
+                <RowDefinition Height="1*"/>
+                <RowDefinition Height="60"/>
+            </Grid.RowDefinitions>
+            <Grid Margin="20 0">
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="60"/>
+                    <RowDefinition Height="1*"/>
+                    <RowDefinition Height="30"/>
+                </Grid.RowDefinitions>
+                <TextBlock Text="Тема задачи"
+                           Style="{StaticResource Title}"
+                           VerticalAlignment="Center"/>
+                <Border HorizontalAlignment="Right"
+                        VerticalAlignment="Center"
+                        Padding="20 5"
+                        CornerRadius="5"
+                        Background="{StaticResource Critical}">
+                    <TextBlock Text="Критическая"
+                               Foreground="Black"
+                               FontWeight="Normal"
+                               FontSize="16">
+                    </TextBlock>
+                </Border>
+                <ScrollViewer Grid.Row="1"
+                              VerticalScrollBarVisibility="Auto"
+                              HorizontalScrollBarVisibility="Disabled">
+                    <TextBlock Text="Описание задачи"
+                               FontSize="16"
+                               Foreground="{StaticResource AccentLightClick}"
+                               Margin="0 20"/>
+
+                </ScrollViewer>
+                <TextBlock Text="Дата: 01/01/2025"
+                           Background="{StaticResource AccentLight}"
+                           Padding="20 3"
+                           VerticalAlignment="Center"
+                           HorizontalAlignment="Left"
+                           Grid.Row="2"
+                           Foreground="White"/>
+            </Grid>
+            <Grid Grid.Row="1"
+                  Margin="0 20 0 0">
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="50"/>
+                    <RowDefinition Height="1*"/>
+                </Grid.RowDefinitions>
+                <TextBlock Style="{StaticResource Title}"
+                           Text="Чек-лист задачи"
+                           VerticalAlignment="Center"
+                           Margin="20 0 0 0"/>
+                <ListView Grid.Row="1"
+                      Background="Transparent"
+                      BorderThickness="0">
+                </ListView>
+            </Grid>
+            <!--кнопки изменить удалить выполнена gridrow2-->
         </Grid>
         <Rectangle Fill="{StaticResource TaskStatusBackground}" Grid.Column="3"/>
     </Grid>
