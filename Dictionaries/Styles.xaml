@@ -90,4 +90,88 @@
         </Style.Triggers>
     </Style>
     <!--кнопки изменить удалить выполнена-->
+    <Style x:Key="NewTaskTitle" TargetType="TextBox">
+        <Setter Property="Background" Value="White"/>
+        <Setter Property="Background" Value="{StaticResource OnAccent}"/>
+        <Setter Property="BorderThickness" Value="1"/>
+        <Setter Property="Padding" Value="0 0 0 3"/>
+        <Setter Property="Cursor" Value="IBeam"/>
+        <Setter Property="Template">
+            <Setter.Value>
+                <ControlTemplate TargetType="TextBox">
+                    <Border Background="{TemplateBinding Background}" BorderBrush="{TemplateBinding BorderBrush}" BorderThickness="{TemplateBinding BorderThickness}" CornerRadius="3">
+                        <ScrollViewer x:Name="PART_ContentHost" HorizontalAlignment="Left" VerticalAlignment="Center"/>
+                    </Border>
+                    <ControlTemplate.Triggers>
+                        <Trigger Property="IsMouseOver" Value="True">
+                            <Setter Property="BorderBrush" Value="{DynamicResource AccentLight}" />
+                        </Trigger>
+                    </ControlTemplate.Triggers>
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>
+    </Style>
+    <Style x:Key="NewTaskDesc" TargetType="TextBox">
+        <Setter Property="Background" Value="White"/>
+        <Setter Property="Background" Value="{StaticResource OnAccent}"/>
+        <Setter Property="BorderThickness" Value="1"/>
+        <Setter Property="TextWrapping" Value="Wrap"/>
+        <Setter Property="Padding" Value="0 0 0 3"/>
+        <Setter Property="Cursor" Value="IBeam"/>
+        <Setter Property="Template">
+            <Setter.Value>
+                <ControlTemplate TargetType="TextBox">
+                    <Border Background="{TemplateBinding Background}" BorderBrush="{TemplateBinding BorderBrush}" BorderThickness="{TemplateBinding BorderThickness}" CornerRadius="3">
+                        <ScrollViewer x:Name="PART_ContentHost" HorizontalAlignment="Left" VerticalAlignment="Top" HorizontalScrollBarVisibility="Disabled" VerticalScrollBarVisibility="Auto"/>
+                    </Border>
+                    <ControlTemplate.Triggers>
+                        <Trigger Property="IsMouseOver" Value="True">
+                            <Setter Property="BorderBrush" Value="{DynamicResource AccentLight}" />
+                        </Trigger>
+                    </ControlTemplate.Triggers>
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>
+    </Style>
+    <Style x:Key="AddTaskButton" TargetType="Button">
+        <Setter Property="HorizontalAlignment" Value="Right"/>
+        <Setter Property="VerticalAlignment" Value="Center"/>
+        <Setter Property="Height" Value="30"/>
+        <Setter Property="Width" Value="100"/>
+        <Setter Property="Background" Value="{StaticResource AccentLight}"/>
+        <Setter Property="BorderThickness" Value="0"/>
+        <Setter Property="BorderBrush" Value="Transparent"/>
+        <Setter Property="Cursor" Value="Hand"/>
+        <Setter Property="Foreground" Value="Black"/>
+        <Setter Property="Template">
+            
+            <Setter.Value>
+                
+                <ControlTemplate TargetType="Button">
+                    <Border
+                        Background="{TemplateBinding Background}"
+                        BorderBrush="{TemplateBinding BorderBrush}"
+                        BorderThickness="{TemplateBinding BorderThickness}"
+                        CornerRadius="3">
+                        <ContentPresenter HorizontalAlignment="Center" 
+                                      VerticalAlignment="Center"
+                                      Content="{TemplateBinding Content}"
+                                      ContentTemplate="{TemplateBinding ContentTemplate}"
+                                      TextBlock.FontSize="{TemplateBinding FontSize}"
+                                      TextBlock.FontWeight="{TemplateBinding FontWeight}"
+                                      TextBlock.Foreground="{TemplateBinding Foreground}"/>
+                    </Border>
+                    
+                    <ControlTemplate.Triggers>
+                        <Trigger Property="IsMouseOver" Value="True">
+                            <Setter Property="Background" Value="{StaticResource AccentLightOver}" />
+                        </Trigger>
+                        <Trigger Property="IsPressed" Value="True">
+                            <Setter Property="Background" Value="{StaticResource AccentLightClick}" />
+                        </Trigger>
+                    </ControlTemplate.Triggers>
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>
+    </Style>
 </ResourceDictionary>
