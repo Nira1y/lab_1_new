@@ -1,4 +1,5 @@
-﻿using System;
+﻿using lab_1_new.ViewModel;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -23,6 +24,7 @@ namespace lab_1_new.View
         public NewTaskWindow()
         {
             InitializeComponent();
+            DataContext = new NewTaskViewModel();
         }
     }
 }

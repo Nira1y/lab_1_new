@@ -4,12 +4,12 @@
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:xctk="http://schemas.xceed.com/wpf/xaml/toolkit"
-        xmlns:local="clr-namespace:lab_1_new.View"
+        xmlns:local="clr-namespace:lab_1_new.View" xmlns:viewmodel="clr-namespace:lab_1_new.ViewModel" d:DataContext="{d:DesignInstance Type=viewmodel:NewTaskViewModel}"
         mc:Ignorable="d"
         Title="NewTaskWindow" Height="812" Width="544"
         WindowStartupLocation="CenterScreen">
-
-    <Grid Cursor="">
+   
+    <Grid>
         <Grid.RowDefinitions>
             <RowDefinition Height="50" />
             <RowDefinition Height="200" />
@@ -18,14 +18,11 @@
             <RowDefinition Height="40" />
             <RowDefinition Height="30" />
         </Grid.RowDefinitions>
-
         <Grid Margin="20 0">
             <Grid.ColumnDefinitions>
                 <ColumnDefinition/>
                 <ColumnDefinition Width="150"/>
             </Grid.ColumnDefinitions>
-
-
             <TextBox x:Name="TaskTitle" Style="{StaticResource NewTaskTitle}"
                      VerticalAlignment="Center"
                      BorderBrush="{StaticResource AccentLight}"
@@ -78,11 +75,20 @@
                     BorderBrush="{StaticResource AccentLight}"
                     BorderThickness="1"
                     Margin="0 0 19 0" 
-                    Height="36" />
+                    Height="36"
+                    Text="{Binding NewTaskText, UpdateSourceTrigger=PropertyChanged}" Cursor="IBeam">
+                <TextBox.InputBindings>
+                    <KeyBinding Key="Enter" Command="{Binding AddTaskCommand}"/>
+                </TextBox.InputBindings>
+            </TextBox>
+            <Button Style="{StaticResource Add}" Grid.Column="1" HorizontalAlignment="Center"
+                    Command="{Binding AddTaskCommand}"/>
         </Grid>
+        
         <Grid Grid.Row="3">
             <ListBox x:Name="ChecklistListBox"
                     Background="Transparent"
+                    ItemsSource="{Binding ChecklistItems}"
                     BorderBrush="{StaticResource AccentLight}"
                     BorderThickness="1"
                     FontSize="14"
@@ -90,13 +96,25 @@
                     ScrollViewer.VerticalScrollBarVisibility="Auto">
                     <ListBox.ItemTemplate>
                         <DataTemplate>
-                            <CheckBox Content="{Binding}" 
-                              Margin="2"
-                              IsChecked="True"/>
+                            <DockPanel>
+                                <CheckBox Content="{Binding}" 
+                                    Margin="2"
+                                    IsChecked="True"
+                                    DockPanel.Dock="Left"/>
+                            <Button Content="✕" 
+                                    Margin="5 0 0 0"
+                                    Command="{Binding DataContext.RemoveTaskCommand, RelativeSource={RelativeSource AncestorType=ListBox}}"
+                                    CommandParameter="{Binding}"
+                                    Width="20"
+                                    Height="20"
+                                    DockPanel.Dock="Right"
+                                    Cursor="Hand"/>
+                            </DockPanel>
                         </DataTemplate>
                     </ListBox.ItemTemplate>
-                </ListBox>
+             </ListBox>
         </Grid>
+        
         <Grid Grid.Row="4" Margin="20 0">
             <Grid.ColumnDefinitions>
                 <ColumnDefinition Width="Auto"/>
@@ -120,7 +138,7 @@
                        Grid.Column="2"
                        VerticalAlignment="Center"
                        Margin="10 0 10 0"/>
-            
+
             <xctk:TimePicker Value="{Binding DueTime}"
                              Grid.Column="3"
                              Format="ShortTime"
@@ -128,8 +146,7 @@
                              Margin="10 0 0 0"/>
         </Grid>
         <Grid Grid.Row="5" Margin="20 5 20 5">
-            <Button Style="{StaticResource AddTaskButton}"
-                    Content="Добавить задачу"/>
+            <Button Style="{StaticResource AddTaskButton}" Content="Добавить задачу" Cursor="Hand"/>
         </Grid>
     </Grid>
 </Window>
