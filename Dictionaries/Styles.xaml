@@ -72,23 +72,7 @@
         <Setter Property="FontSize" Value="20"/>
         <Setter Property="FontWeight" Value="Bold"/>
     </Style>
-    <Style x:Key="Importance" TargetType="Border">
-        <Setter Property="Background" Value="Gray"/>
-        <Style.Triggers>
-            <DataTrigger Binding="{Binding Task.TaskImportance}" Value="Critical">
-                <Setter Property="Background" Value="{StaticResource Critical}"/>
-            </DataTrigger>
-            <DataTrigger Binding="{Binding Task.TaskImportance}" Value="High">
-                <Setter Property="Background" Value="{StaticResource High}"/>
-            </DataTrigger>
-            <DataTrigger Binding="{Binding Task.TaskImportance}" Value="Medium">
-                <Setter Property="Background" Value="{StaticResource Medium}"/>
-            </DataTrigger>
-            <DataTrigger Binding="{Binding Task.TaskImportance}" Value="Low">
-                <Setter Property="Background" Value="{StaticResource Low}"/>
-            </DataTrigger>
-        </Style.Triggers>
-    </Style>
+
     <!--кнопки изменить удалить выполнена-->
     <Style x:Key="NewTaskTitle" TargetType="TextBox">
         <Setter Property="Background" Value="White"/>
@@ -203,6 +187,52 @@
                         </Trigger>
                         <Trigger Property="IsPressed" Value="True">
                             <Setter Property="Background" Value="{StaticResource AccentLightClick}" />
+                        </Trigger>
+                    </ControlTemplate.Triggers>
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>
+    </Style>
+    <Style x:Key="TaskCardStyle" TargetType="Border">
+        <Setter Property="Background" Value="Transparent"/>
+        <Setter Property="BorderBrush" Value="LightGray"/>
+        <Setter Property="BorderThickness" Value="1"/>
+        <Setter Property="Margin" Value="5"/>
+        <Setter Property="Cursor" Value="Hand"/>
+        <Style.Triggers>
+            <Trigger Property="IsMouseOver" Value="True">
+                <Setter Property="Background" Value="#FFE8E8E8"/>
+                <Setter Property="BorderBrush" Value="{StaticResource AccentLight}"/>
+                <Setter Property="BorderThickness" Value="2"/>
+            </Trigger>
+        </Style.Triggers>
+    </Style>
+    <Style x:Key="Delete" TargetType="Button">
+        <Setter Property="HorizontalAlignment" Value="Left"/>
+        <Setter Property="VerticalAlignment" Value="Center"/>
+        <Setter Property="Height" Value="40"/>
+        <Setter Property="Width" Value="159"/>
+        <Setter Property="BorderThickness" Value="0"/>
+        <Setter Property="BorderBrush" Value="Transparent"/>
+        <Setter Property="Cursor" Value="Hand"/>
+        <Setter Property="Foreground" Value="Black"/>
+        <Setter Property="Template">
+            <Setter.Value>
+                <ControlTemplate TargetType="Button">
+                    <Border x:Name="border" 
+                        Background="#F26161" 
+                        BorderBrush="{TemplateBinding BorderBrush}" 
+                        BorderThickness="{TemplateBinding BorderThickness}" 
+                        Padding="{TemplateBinding Padding}" 
+                        CornerRadius="3">
+                        <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                    </Border>
+                    <ControlTemplate.Triggers>
+                        <Trigger Property="IsMouseOver" Value="True">
+                            <Setter TargetName="border" Property="Background" Value="#D45050" />
+                        </Trigger>
+                        <Trigger Property="IsPressed" Value="True">
+                            <Setter TargetName="border" Property="Background" Value="#B34040" />
                         </Trigger>
                     </ControlTemplate.Triggers>
                 </ControlTemplate>

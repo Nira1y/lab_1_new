@@ -1,4 +1,7 @@
-﻿using System.Text;
+﻿using lab_1_new.Models;
+using lab_1_new.View;
+using lab_1_new.ViewModel;
+using System.Text;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Data;
@@ -19,6 +22,18 @@ namespace lab_1_new
         public MainWindow()
         {
             InitializeComponent();
+        }
+        private void TaskListItem_MouseLeftButtonDown(object sender, MouseButtonEventArgs e)
+        {
+            if (sender is TaskListItem taskListItem)
+            {
+                var viewModel = DataContext as MainWindiowViewModel;
+                if (viewModel != null && taskListItem.DataContext is TaskItem task)
+                {
+                    viewModel.SelectedTask = task;
+                }
+
+            }
         }
     }
 }

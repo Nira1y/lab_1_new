@@ -1,12 +1,13 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
 namespace lab_1_new.Models
 {
-    public class Task
+    public class TaskItem
     {
         public int Id { get; set; }
         public string Title { get; set; }
@@ -15,10 +16,15 @@ namespace lab_1_new.Models
         public DateTime StartTime { get; set; }
         public bool IsCompleted { get; set; }
         public TimeSpan Timer { get; set; }
+        public ObservableCollection<string> ChecklistItems { get; set; }
 
         public TaskState TaskState { get; set; }
         public TaskCategory TaskCategory { get; set; }
-        public TaskImportance TaskImportance { get; set; }
+
+        public static implicit operator Task(TaskItem v)
+        {
+            throw new NotImplementedException();
+        }
     }
 
     public enum TaskState
@@ -33,19 +39,12 @@ namespace lab_1_new.Models
 
     public enum TaskCategory
     {
-        Work,
-        Home,
-        Personal,
-        Finance,
-        Health,
-        None
+        Работа,
+        Дом,
+        Личное,
+        Финансы,
+        Здоровье,
+        Другое
     }
 
-    public enum TaskImportance
-    {
-        Low,
-        Medium,
-        High,
-        Critical
-    }
 }

@@ -9,11 +9,6 @@
     <SolidColorBrush x:Key="TaskStatusBackground" Color = "#F9F7FC" />
     <SolidColorBrush x:Key="DefaultText" Color = "#FF474747" />
 
-    <SolidColorBrush x:Key="Low" Color="#FF0CAFF4" />
-    <SolidColorBrush x:Key="Medium" Color="#FF2AD985" />
-    <SolidColorBrush x:Key="High" Color="#FFF4B30C" />
-    <SolidColorBrush x:Key="Critical" Color="#FFCA2C2C" />
-
     <SolidColorBrush x:Key="In Process" Color="#FF518657" />
     <SolidColorBrush x:Key="Completed" Color="#FF4187AC" />
     <SolidColorBrush x:Key="Not Started" Color="#FFB1B1B1" />

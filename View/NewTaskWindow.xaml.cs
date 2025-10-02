@@ -1,30 +1,40 @@
 ﻿using lab_1_new.ViewModel;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+using lab_1_new.Models;
 using System.Windows;
-using System.Windows.Controls;
-using System.Windows.Data;
-using System.Windows.Documents;
-using System.Windows.Input;
-using System.Windows.Media;
-using System.Windows.Media.Imaging;
-using System.Windows.Shapes;
-
 
 namespace lab_1_new.View
 {
-    /// <summary>
-    /// Логика взаимодействия для NewTaskWindow.xaml
-    /// </summary>
     public partial class NewTaskWindow : Window
     {
+        public TaskItem NewTask { get; set; }
+
         public NewTaskWindow()
         {
             InitializeComponent();
             DataContext = new NewTaskViewModel();
+            Title = "Новая задача";
+        }
+
+        public NewTaskWindow(TaskItem taskToEdit)
+        {
+            InitializeComponent();
+            DataContext = new NewTaskViewModel(taskToEdit);
+            Title = "Редактирование задачи";
+        }
+
+        private void AddTaskButton_Click(object sender, RoutedEventArgs e)
+        {
+            var viewModel = DataContext as NewTaskViewModel;
+
+            if (string.IsNullOrWhiteSpace(viewModel.TaskTitle))
+            {
+                MessageBox.Show("Введите название задачи", "Ошибка", MessageBoxButton.OK, MessageBoxImage.Warning);
+                return;
+            }
+
+            NewTask = viewModel.CreateTaskItem();
+            DialogResult = true;
+            Close();
         }
     }
 }
