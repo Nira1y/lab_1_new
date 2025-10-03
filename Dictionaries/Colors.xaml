@@ -7,7 +7,7 @@
     <SolidColorBrush x:Key="TaskListBackground" Color = "#F9F5FF" />
     <SolidColorBrush x:Key="WindowBackground" Color = "#FFFFFFFF" />
     <SolidColorBrush x:Key="TaskStatusBackground" Color = "#F9F7FC" />
-    <SolidColorBrush x:Key="DefaultText" Color = "#FF474747" />
+    <SolidColorBrush x:Key="DefaultText" Color = "Black" />
 
     <SolidColorBrush x:Key="In Process" Color="#FF518657" />
     <SolidColorBrush x:Key="Completed" Color="#FF4187AC" />

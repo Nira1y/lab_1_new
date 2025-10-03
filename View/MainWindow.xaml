@@ -8,13 +8,13 @@
         xmlns:view="clr-namespace:lab_1_new.View" 
         mc:Ignorable="d"
         Title="MainWindow" Height="832" Width="1280"
-        WindowStartupLocation = "CenterScreen">
+        WindowStartupLocation="CenterScreen">
 
     <Window.DataContext>
-        <vm:MainWindiowViewModel/>
+        <vm:MainWindowViewModel/>
     </Window.DataContext>
 
-    <Grid Cursor="">
+    <Grid>
         <Grid.ColumnDefinitions>
             <ColumnDefinition Width="88" />
             <ColumnDefinition Width="435" />
@@ -39,7 +39,8 @@
             <TextBox x:Name="TaskSearchBox"
                 Style="{StaticResource TaskSearchBox}"
                 Grid.Row="1"
-                Margin="20 0"/>
+                Margin="20 0"
+                Text="{Binding SearchText, UpdateSourceTrigger=PropertyChanged}"/>
 
             <Label IsHitTestVisible="False"
                    Content="Найти задачу..."
@@ -78,41 +79,52 @@
             <Grid Margin="20 0">
                 <Grid.RowDefinitions>
                     <RowDefinition Height="60"/>
+                    <RowDefinition Height="40"/>
                     <RowDefinition Height="1*"/>
                     <RowDefinition Height="30"/>
                 </Grid.RowDefinitions>
 
                 <TextBlock Text="{Binding Title, FallbackValue='Тема задачи'}"
                            Style="{StaticResource Title}"
-                           VerticalAlignment="Center"/>
+                           VerticalAlignment="Center"
+                           Grid.Row="0"/>
 
-                <Border HorizontalAlignment="Right"
-                        VerticalAlignment="Center"
-                        Padding="20 5"
-                        CornerRadius="5"
-                        Background="LightGray">
-                    <TextBlock Text="{Binding TaskCategory, FallbackValue='Категория'}"
-                               Foreground="Black"
-                               FontWeight="Normal"
-                               FontSize="16"/>
-                </Border>
+                <StackPanel Grid.Row="1" Orientation="Horizontal" VerticalAlignment="Center">
+                    <Border Padding="15 5"
+                            CornerRadius="5"
+                            Background="LightGray"
+                            Margin="0 0 10 0">
+                        <TextBlock Text="{Binding TaskCategory, FallbackValue='Категория'}"
+                                   Foreground="Black"
+                                   FontWeight="Normal"
+                                   FontSize="14"/>
+                    </Border>
+                    <Border Padding="15 5"
+                            CornerRadius="5"
+                            Background="Gray">
+                        <TextBlock Text="{Binding TaskState, FallbackValue='Статус'}"
+                                   Foreground="White"
+                                   FontWeight="SemiBold"
+                                   FontSize="14"/>
+                    </Border>
+                </StackPanel>
 
-                <ScrollViewer Grid.Row="1"
+                <ScrollViewer Grid.Row="2"
                               VerticalScrollBarVisibility="Auto"
                               HorizontalScrollBarVisibility="Disabled">
                     <TextBlock Text="{Binding Description, FallbackValue='Описание задачи'}"
                                FontSize="16"
                                Foreground="{StaticResource AccentLightClick}"
-                               Margin="0 20"
+                               Margin="0 10"
                                TextWrapping="Wrap"/>
                 </ScrollViewer>
 
-                <TextBlock Text="{Binding DueDate, StringFormat='Дата: {0:dd/MM/yyyy}', FallbackValue='Дата: 01/01/2025'}"
+                <TextBlock Text="{Binding DueDate, StringFormat='Срок: {0:dd/MM/yyyy HH:mm}', FallbackValue='Срок: 01/01/2025'}"
                            Background="{StaticResource AccentLight}"
                            Padding="20 3"
                            VerticalAlignment="Center"
                            HorizontalAlignment="Left"
-                           Grid.Row="2"
+                           Grid.Row="3"
                            Foreground="White"/>
             </Grid>
 
@@ -139,8 +151,28 @@
                     </ListView.ItemTemplate>
                 </ListView>
             </Grid>
-            <Button Content="Изменить" HorizontalAlignment="Left" Height="40" Margin="20,0,0,0" Grid.Row="2" VerticalAlignment="Center" Width="159" Style="{StaticResource AddTaskButton}" Command="{Binding DataContext.EditTaskCommand, RelativeSource={RelativeSource AncestorType=Window}}"/>
-            <Button Content="Удалить" HorizontalAlignment="Left" Height="40" Margin="448,0,0,0" VerticalAlignment="Center" Width="159" Grid.Row="2" RenderTransformOrigin="0.253 0.49" Style="{StaticResource Delete}" Command="{Binding DataContext.DeleteTaskCommand, RelativeSource={RelativeSource AncestorType=Window}}"/>
+
+            <StackPanel Grid.Row="2" Orientation="Horizontal" HorizontalAlignment="Center" VerticalAlignment="Center">
+                <Button Content="Завершить" 
+                        Height="40" 
+                        Width="159" 
+                        Style="{StaticResource CompleteButton}" 
+                        Command="{Binding DataContext.CompleteTaskCommand, RelativeSource={RelativeSource AncestorType=Window}}"
+                        Margin="0,0,10,0"/>
+
+                <Button Content="Изменить" 
+                        Height="40" 
+                        Width="159" 
+                        Style="{StaticResource AddTaskButton}" 
+                        Command="{Binding DataContext.EditTaskCommand, RelativeSource={RelativeSource AncestorType=Window}}"
+                        Margin="0,0,10,0"/>
+
+                <Button Content="Удалить" 
+                        Height="40" 
+                        Width="159" 
+                        Style="{StaticResource Delete}" 
+                        Command="{Binding DataContext.DeleteTaskCommand, RelativeSource={RelativeSource AncestorType=Window}}"/>
+            </StackPanel>
         </Grid>
         <Rectangle Fill="{StaticResource TaskStatusBackground}" Grid.Column="3"/>
     </Grid>

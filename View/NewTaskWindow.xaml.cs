@@ -7,6 +7,7 @@ namespace lab_1_new.View
     public partial class NewTaskWindow : Window
     {
         public TaskItem NewTask { get; set; }
+        private TaskItem _editingTask;
 
         public NewTaskWindow()
         {
@@ -18,6 +19,7 @@ namespace lab_1_new.View
         public NewTaskWindow(TaskItem taskToEdit)
         {
             InitializeComponent();
+            _editingTask = taskToEdit;
             DataContext = new NewTaskViewModel(taskToEdit);
             Title = "Редактирование задачи";
         }
@@ -33,6 +35,11 @@ namespace lab_1_new.View
             }
 
             NewTask = viewModel.CreateTaskItem();
+            if (_editingTask != null)
+            {
+                NewTask.Id = _editingTask.Id;
+            }
+
             DialogResult = true;
             Close();
         }

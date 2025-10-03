@@ -87,7 +87,7 @@ namespace lab_1_new.ViewModel
         }
 
 
-        public NewTaskViewModel(TaskItem taskToEdit) : this()
+        public NewTaskViewModel(TaskItem taskToEdit):this()
         {
             TaskTitle = taskToEdit.Title;
             TaskDescription = taskToEdit.Description;
@@ -143,10 +143,8 @@ namespace lab_1_new.ViewModel
                 Description = TaskDescription,
                 TaskCategory = SelectedCategory,
                 DueDate = new DateTime(DueDate.Year, DueDate.Month, DueDate.Day, DueTime.Hour, DueTime.Minute, 0),
-                StartTime = DateTime.Now,
                 IsCompleted = false,
-                Timer = TimeSpan.Zero,
-                TaskState = TaskState.NotStarted,
+                TaskState = TaskState.Выполняется,
                 ChecklistItems = new ObservableCollection<string>(ChecklistItems)
             };
         }

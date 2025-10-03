@@ -27,7 +27,8 @@ namespace lab_1_new
         {
             if (sender is TaskListItem taskListItem)
             {
-                var viewModel = DataContext as MainWindiowViewModel;
+                var viewModel = DataContext as MainWindowViewModel;
+
                 if (viewModel != null && taskListItem.DataContext is TaskItem task)
                 {
                     viewModel.SelectedTask = task;
