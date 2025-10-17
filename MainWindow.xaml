@@ -5,8 +5,14 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:controls="clr-namespace:lab_2_graphic_editor.View.Controls"
         xmlns:local="clr-namespace:lab_2_graphic_editor"
+        xmlns:vm="clr-namespace:lab_2_graphic_editor.ViewModel"
         mc:Ignorable="d"
         Title="MainWindow" Height="800" Width="800">
+    
+    <Window.DataContext>
+        <vm:StatusViewModel/>
+    </Window.DataContext>
+    
     <DockPanel>
         <Menu DockPanel.Dock="Top">
             <MenuItem Header="Файл">
@@ -17,6 +23,16 @@
                 <MenuItem Header="Выход"/>
             </MenuItem>
         </Menu>
+        <StatusBar DockPanel.Dock="Bottom">
+            <StatusBarItem>
+                <TextBlock Text="{Binding Coordinates}"/>
+            </StatusBarItem>
+            <Separator/>
+            <StatusBarItem>
+                <TextBlock Text="{Binding CurrentTool}"/>
+            </StatusBarItem>
+            <Separator/>
+        </StatusBar>
         <Grid>
             <Grid.ColumnDefinitions>
                 <ColumnDefinition Width="1*"/>
