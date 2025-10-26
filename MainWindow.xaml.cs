@@ -52,5 +52,11 @@ namespace lab_2_graphic_editor
         {
             _statusVM.Coordinates = "X: -, Y: -";
         }
+
+        private void SelectLine_Click(object sender, RoutedEventArgs e)
+        {
+            _toolManager.CurrentTool = new LineTool();
+            _statusVM.CurrentTool = "Инструмент: Линия";
+        }
     }
 }

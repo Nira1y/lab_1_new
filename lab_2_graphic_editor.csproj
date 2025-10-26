@@ -9,7 +9,6 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <Folder Include="Models\Shapes\" />
     <Folder Include="Properties\" />
     <Folder Include="Services\" />
     <Folder Include="Resources\" />

@@ -22,7 +22,21 @@
                 <Separator/>
                 <MenuItem Header="Выход"/>
             </MenuItem>
+            <MenuItem Header="Правка">
+            </MenuItem>
+            <MenuItem Header="Вид">
+            </MenuItem>
+            <MenuItem Header="Инструменты">
+                <MenuItem Header="Курсор"/>
+                <MenuItem Header="Линия" Click="SelectLine_Click"/>
+                <MenuItem Header="Прямоугольник"/>
+                <MenuItem Header="Эллипс"/>
+                <MenuItem Header="Треугольник"/>
+                <MenuItem Header="Текст"/>
+                <MenuItem Header="Ластник"/>
+            </MenuItem>
         </Menu>
+        
         <StatusBar DockPanel.Dock="Bottom">
             <StatusBarItem>
                 <TextBlock Text="{Binding Coordinates}"/>
