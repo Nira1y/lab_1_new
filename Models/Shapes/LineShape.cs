@@ -11,11 +11,6 @@ namespace lab_2_graphic_editor.Models.Shapes
 {
     public class LineShape : ShapeBase
     {
-        public LineShape() 
-        { 
-            Name = "Line";
-        }
-
         public override Shape CreateShape(Point startPoint, Point endPoint)
         {
             return new Line 

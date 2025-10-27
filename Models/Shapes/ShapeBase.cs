@@ -11,7 +11,6 @@ namespace lab_2_graphic_editor.Models.Shapes
 {
     public abstract class ShapeBase
     {
-        public string Name { get; protected set; }
         public Brush Stroke { get; set; } = Brushes.Black;
         public Brush Fill { get; set; } = Brushes.Black;
         public double StrokeThickness { get; private set; } = 2;

@@ -29,7 +29,7 @@
             <MenuItem Header="Инструменты">
                 <MenuItem Header="Курсор"/>
                 <MenuItem Header="Линия" Click="SelectLine_Click"/>
-                <MenuItem Header="Прямоугольник"/>
+                <MenuItem Header="Прямоугольник" Click="SelectRectangle_Click"/>
                 <MenuItem Header="Эллипс"/>
                 <MenuItem Header="Треугольник"/>
                 <MenuItem Header="Текст"/>

@@ -1,11 +1,12 @@
-﻿using lab_2_graphic_editor.Tools;
+﻿using lab_2_graphic_editor.Models.Tools;
+using lab_2_graphic_editor.Tools;
+using lab_2_graphic_editor.ViewModel;
 using System.Net.NetworkInformation;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
 using System.Windows.Media;
 using System.Windows.Shapes;
-using lab_2_graphic_editor.ViewModel;
 
 namespace lab_2_graphic_editor
 {
@@ -57,6 +58,11 @@ namespace lab_2_graphic_editor
         {
             _toolManager.CurrentTool = new LineTool();
             _statusVM.CurrentTool = "Инструмент: Линия";
+        }
+        private void SelectRectangle_Click(object sender, RoutedEventArgs e)
+        {
+            _toolManager.CurrentTool = new RectangleTool();
+            _statusVM.CurrentTool = "Инструмент: Прямоугольник";
         }
     }
 }
