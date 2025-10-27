@@ -64,5 +64,10 @@ namespace lab_2_graphic_editor
             _toolManager.CurrentTool = new RectangleTool();
             _statusVM.CurrentTool = "Инструмент: Прямоугольник";
         }
+        private void SelectEllipse_Click(object sender, RoutedEventArgs e)
+        {
+            _toolManager.CurrentTool = new EllipseTool();
+            _statusVM.CurrentTool = "Инструмент: Эллипс";
+        }
     }
 }

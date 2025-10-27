@@ -30,7 +30,7 @@
                 <MenuItem Header="Курсор"/>
                 <MenuItem Header="Линия" Click="SelectLine_Click"/>
                 <MenuItem Header="Прямоугольник" Click="SelectRectangle_Click"/>
-                <MenuItem Header="Эллипс"/>
+                <MenuItem Header="Эллипс" Click="SelectEllipse_Click"/>
                 <MenuItem Header="Треугольник"/>
                 <MenuItem Header="Текст"/>
                 <MenuItem Header="Ластник"/>
