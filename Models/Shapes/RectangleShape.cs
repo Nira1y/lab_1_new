@@ -43,7 +43,6 @@ namespace lab_2_graphic_editor.Models.Shapes
             Canvas.SetTop(rect, top);
             rect.Width = width;
             rect.Height = height;
-        }
-        
+        }    
     }
 }

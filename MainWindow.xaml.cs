@@ -69,5 +69,10 @@ namespace lab_2_graphic_editor
             _toolManager.CurrentTool = new EllipseTool();
             _statusVM.CurrentTool = "Инструмент: Эллипс";
         }
+        private void SelectTriangle_Click(object sender, RoutedEventArgs e)
+        {
+            _toolManager.CurrentTool = new TriangleTool();
+            _statusVM.CurrentTool = "Инструмент: Треугольник";
+        }
     }
 }

@@ -31,7 +31,7 @@
                 <MenuItem Header="Линия" Click="SelectLine_Click"/>
                 <MenuItem Header="Прямоугольник" Click="SelectRectangle_Click"/>
                 <MenuItem Header="Эллипс" Click="SelectEllipse_Click"/>
-                <MenuItem Header="Треугольник"/>
+                <MenuItem Header="Треугольник" Click="SelectTriangle_Click"/>
                 <MenuItem Header="Текст"/>
                 <MenuItem Header="Ластник"/>
             </MenuItem>
