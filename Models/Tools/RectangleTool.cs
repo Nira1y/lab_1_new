@@ -9,10 +9,10 @@ namespace lab_2_graphic_editor.Models.Tools
 {
     public class RectangleTool : ShapeTool
     {
-        public RectangleTool()
+        public RectangleTool(bool filled = false)
         {
-            Name = "Прямоугольник";
-            shapeModel = new RectangleShape();
+            Name = filled ? "Прямоугольник (с заливкой)" : "Прямоугольник";
+            shapeModel = new RectangleShape(filled);
         }
     }
 }

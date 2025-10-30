@@ -4,28 +4,35 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using System.Windows;
+using System.Windows.Controls;
+using System.Windows.Media;
 using System.Windows.Navigation;
 using System.Windows.Shapes;
-using System.Windows.Media;
-using System.Windows.Controls;
+using System.Xml.Linq;
 
 namespace lab_2_graphic_editor.Models.Shapes
 {
     public class RectangleShape : ShapeBase
     {
+        public bool WithFill { get; set; }
 
+        public RectangleShape(bool withFill = false)
+        {
+            WithFill = withFill;
+        }
         public override Shape CreateShape(Point startPoint, Point endPoint)
         {
             var rect = new Rectangle
             {
                 Stroke = Stroke,
-                StrokeThickness = StrokeThickness
+                StrokeThickness = StrokeThickness,
+                Fill = WithFill ? Fill : Brushes.Transparent
+
             };
             UpdatePosition(rect, startPoint, endPoint);
             return rect;
         }
         
-
         public override void UpdateShape(Shape shape, Point startPoint, Point endPoint)
         {
             if (shape is Rectangle rect) { 

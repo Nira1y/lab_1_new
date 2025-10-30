@@ -8,10 +8,10 @@ namespace lab_2_graphic_editor.Models.Tools
 {
     public class EllipseTool : ShapeTool
     {
-        public EllipseTool()
+        public EllipseTool(bool filled = false)
         {
-            Name = "Эллипс";
-            shapeModel = new EllipseShape();
+            Name = filled ? "Эллипс (с заливкой)" : "Эллипс";
+            shapeModel = new EllipseShape(filled);
         }
     }
 }

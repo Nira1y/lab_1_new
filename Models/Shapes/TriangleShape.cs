@@ -12,12 +12,19 @@ namespace lab_2_graphic_editor.Models.Shapes
 {
     public class TriangleShape : ShapeBase
     {
+        public bool WithFill {  get; set; }
+
+        public TriangleShape(bool withFill = false) 
+        { 
+            WithFill = withFill;
+        }
         public override Shape CreateShape(Point startPoint, Point endPoint)
         {
             var polygon = new Polygon
             {
                 Stroke = Stroke,
                 StrokeThickness = StrokeThickness,
+                Fill = WithFill ? Fill : Brushes.Transparent
             };
 
             UpdatePoints(polygon, startPoint, endPoint);

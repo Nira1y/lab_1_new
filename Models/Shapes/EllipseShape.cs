@@ -5,18 +5,26 @@ using System.Text;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
+using System.Windows.Media;
 using System.Windows.Shapes;
 
 namespace lab_2_graphic_editor.Models.Shapes
 {
     public class EllipseShape : ShapeBase
     {
+        public bool WithFill { get; set; }
+
+        public EllipseShape(bool withFill = false)
+        {
+            WithFill = withFill;
+        }
         public override Shape CreateShape(Point startPoint, Point endPoint)
         {
             var ellipse = new Ellipse
             {
                 Stroke = Stroke,
                 StrokeThickness = StrokeThickness,
+                Fill = WithFill ? Fill : Brushes.Transparent
 
             };
             UpdatePosition(ellipse, startPoint, endPoint);

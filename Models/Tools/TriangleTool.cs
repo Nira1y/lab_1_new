@@ -10,10 +10,10 @@ namespace lab_2_graphic_editor.Models.Tools
 {
     public class TriangleTool : ShapeTool
     {
-        public TriangleTool() 
+        public TriangleTool(bool filled = false) 
         {
-            Name = "Треугольник";
-            shapeModel = new TriangleShape();
+            Name = filled ? "Треугольник (с заливкой)" : "Треугольник";
+            shapeModel = new TriangleShape(filled);
         }
     }
 }

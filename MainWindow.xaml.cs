@@ -64,15 +64,30 @@ namespace lab_2_graphic_editor
             _toolManager.CurrentTool = new RectangleTool();
             _statusVM.CurrentTool = "Инструмент: Прямоугольник";
         }
+        private void SelectRectangleFill_Click(object sender, RoutedEventArgs e)
+        {
+            _toolManager.CurrentTool = new RectangleTool(true);
+            _statusVM.CurrentTool = "Инструмент: Прямоугольник (с заливкой)";
+        }
         private void SelectEllipse_Click(object sender, RoutedEventArgs e)
         {
             _toolManager.CurrentTool = new EllipseTool();
             _statusVM.CurrentTool = "Инструмент: Эллипс";
         }
+        private void SelectEllipseFill_Click(object sender, RoutedEventArgs e)
+        {
+            _toolManager.CurrentTool = new EllipseTool(true);
+            _statusVM.CurrentTool = "Инструмент: Эллипс (с заливкой)";
+        }
         private void SelectTriangle_Click(object sender, RoutedEventArgs e)
         {
             _toolManager.CurrentTool = new TriangleTool();
             _statusVM.CurrentTool = "Инструмент: Треугольник";
+        }
+        private void SelectTriangleFill_Click(object sender, RoutedEventArgs e)
+        {
+            _toolManager.CurrentTool = new TriangleTool(true);
+            _statusVM.CurrentTool = "Инструмент: Треугольник (с заливкой)";
         }
     }
 }
