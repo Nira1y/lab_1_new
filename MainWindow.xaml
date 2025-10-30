@@ -27,7 +27,7 @@
             <MenuItem Header="Вид">
             </MenuItem>
             <MenuItem Header="Инструменты">
-                <MenuItem Header="Курсор"/>
+                <MenuItem Header="Курсор" Click="SelectCursor_Click"/>
                 <MenuItem Header="Линия" Click="SelectLine_Click"/>
                 <MenuItem Header="Прямоугольник" Click="SelectRectangle_Click"/>
                 <MenuItem Header="Прямоугольник (с заливкой)" Click="SelectRectangleFill_Click"/>
@@ -41,7 +41,7 @@
         </Menu>
         <ToolBar DockPanel.Dock="Top" Background="LightGray" Cursor="">
 
-            <Button Content="Курсор"  ToolTip="Выделение и перемещение" Padding="10,5"/>
+            <Button Content="Курсор" Click="SelectCursor_Click" ToolTip="Выделение и перемещение" Padding="10,5"/>
             <Button Content="Кисть" Click = "SelectBrush_Click" ToolTip="Кисть для рисования" Padding="10,5"/>
             <Button Content="Ластик" ToolTip="Удаление фигур" Padding="10,5"/>
             <Separator/>
