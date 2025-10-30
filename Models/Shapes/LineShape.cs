@@ -1,4 +1,5 @@
-﻿using System;
+﻿using lab_2_graphic_editor.Services;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -11,6 +12,10 @@ namespace lab_2_graphic_editor.Models.Shapes
 {
     public class LineShape : ShapeBase
     {
+        public LineShape(ColorService colorService) : base(colorService)
+        {
+        }
+
         public override Shape CreateShape(Point startPoint, Point endPoint)
         {
             return new Line 

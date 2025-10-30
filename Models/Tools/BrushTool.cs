@@ -3,19 +3,22 @@ using System.Windows.Controls;
 using System.Windows.Media;
 using System.Windows.Shapes;
 using lab_2_graphic_editor.Models.Tools;
+using lab_2_graphic_editor.Services;
 
 namespace lab_2_graphic_editor.Tools
 {
-    public partial class BrushTool : Tool
+    public class BrushTool : Tool
     {
         private Point previousPoint;
         private bool isDrawing = false;
-        private Brush currentBrush = Brushes.Black;
         private double brushSize = 3;
+        private readonly ColorService _colorService;
 
-        public BrushTool()
+        public BrushTool(ColorService colorService)
         {
             Name = "Кисть";
+            IconPath = "/Resources/brush_icon.png";
+            _colorService = colorService;
         }
 
         public override void OnMouseDown(Point position, Canvas canvas)
@@ -47,7 +50,7 @@ namespace lab_2_graphic_editor.Tools
                 Y1 = start.Y,
                 X2 = end.X,
                 Y2 = end.Y,
-                Stroke = currentBrush,
+                Stroke = _colorService.CurrentColor,
                 StrokeThickness = brushSize,
                 StrokeStartLineCap = PenLineCap.Round,
                 StrokeEndLineCap = PenLineCap.Round,
@@ -63,12 +66,18 @@ namespace lab_2_graphic_editor.Tools
             {
                 Width = brushSize,
                 Height = brushSize,
-                Fill = currentBrush
+                Fill = _colorService.CurrentColor,
+                Stroke = _colorService.CurrentColor
             };
 
             Canvas.SetLeft(dot, point.X - brushSize / 2);
             Canvas.SetTop(dot, point.Y - brushSize / 2);
             canvas.Children.Add(dot);
+        }
+
+        public void SetBrushSize(double size)
+        {
+            brushSize = size;
         }
     }
 }

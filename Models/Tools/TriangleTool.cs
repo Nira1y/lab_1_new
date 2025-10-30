@@ -1,19 +1,17 @@
-﻿using lab_2_graphic_editor.Models.Shapes;
-using lab_2_graphic_editor.Tools;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿using System.Windows;
+using System.Windows.Controls;
+using lab_2_graphic_editor.Models.Tools;
+using lab_2_graphic_editor.Models.Shapes;
+using lab_2_graphic_editor.Services;
 
-namespace lab_2_graphic_editor.Models.Tools
+namespace lab_2_graphic_editor.Tools
 {
     public class TriangleTool : ShapeTool
     {
-        public TriangleTool(bool filled = false) 
+        public TriangleTool(ColorService colorService, bool filled = false) : base(colorService)
         {
-            Name = filled ? "Треугольник (с заливкой)" : "Треугольник";
-            shapeModel = new TriangleShape(filled);
+            Name = filled ? "Прямоугольник (с заливкой)" : "Прямоугольник";
+            shapeModel = new TriangleShape(colorService, filled);
         }
     }
 }

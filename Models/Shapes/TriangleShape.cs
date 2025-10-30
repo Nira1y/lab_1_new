@@ -1,12 +1,13 @@
-﻿using System;
+﻿using lab_2_graphic_editor.Services;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using System.Windows;
+using System.Windows.Media;
 using System.Windows.Media.Animation;
 using System.Windows.Shapes;
-using System.Windows.Media;
 
 namespace lab_2_graphic_editor.Models.Shapes
 {
@@ -14,8 +15,8 @@ namespace lab_2_graphic_editor.Models.Shapes
     {
         public bool WithFill {  get; set; }
 
-        public TriangleShape(bool withFill = false) 
-        { 
+        public TriangleShape(ColorService colorService, bool withFill = false) : base(colorService)
+        {
             WithFill = withFill;
         }
         public override Shape CreateShape(Point startPoint, Point endPoint)

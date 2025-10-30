@@ -5,7 +5,7 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:controls="clr-namespace:lab_2_graphic_editor.View.Controls"
         xmlns:local="clr-namespace:lab_2_graphic_editor"
-        xmlns:vm="clr-namespace:lab_2_graphic_editor.ViewModel"
+        xmlns:vm="clr-namespace:lab_2_graphic_editor.ViewModel" xmlns:xctk="http://schemas.xceed.com/wpf/xaml/toolkit"
         mc:Ignorable="d"
         Title="MainWindow" Height="800" Width="800">
     
@@ -39,7 +39,21 @@
                 <MenuItem Header="Ластник"/>
             </MenuItem>
         </Menu>
-        
+        <ToolBar DockPanel.Dock="Top" Background="LightGray" Cursor="">
+
+            <Button Content="Курсор"  ToolTip="Выделение и перемещение" Padding="10,5"/>
+            <Button Content="Кисть" Click = "SelectBrush_Click" ToolTip="Кисть для рисования" Padding="10,5"/>
+            <Button Content="Ластик" ToolTip="Удаление фигур" Padding="10,5"/>
+            <Separator/>
+
+            <TextBlock Text="Цвет: " VerticalAlignment="Center" Margin="5,0,0,0"/>
+            <xctk:ColorPicker x:Name="ColorPicker"
+                  Width="120" 
+                  Height="30"
+                  SelectedColor="{Binding CurrentColor, Mode=TwoWay}"
+                  ToolTip="Выбор цвета"/>
+        </ToolBar>
+
         <StatusBar DockPanel.Dock="Bottom">
             <StatusBarItem>
                 <TextBlock Text="{Binding Coordinates}"/>

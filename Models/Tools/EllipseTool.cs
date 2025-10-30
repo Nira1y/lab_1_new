@@ -2,16 +2,16 @@
 using System.Windows.Controls;
 using lab_2_graphic_editor.Models.Tools;
 using lab_2_graphic_editor.Models.Shapes;
-using lab_2_graphic_editor.Tools;
+using lab_2_graphic_editor.Services;
 
-namespace lab_2_graphic_editor.Models.Tools
+namespace lab_2_graphic_editor.Tools
 {
     public class EllipseTool : ShapeTool
     {
-        public EllipseTool(bool filled = false)
+        public EllipseTool(ColorService colorService, bool filled = false) : base(colorService)
         {
-            Name = filled ? "Эллипс (с заливкой)" : "Эллипс";
-            shapeModel = new EllipseShape(filled);
+            Name = filled ? "Прямоугольник (с заливкой)" : "Прямоугольник";
+            shapeModel = new EllipseShape(colorService, filled);
         }
     }
 }

@@ -3,6 +3,7 @@ using System.Windows.Controls;
 using System.Windows.Shapes;
 using lab_2_graphic_editor.Models.Tools;
 using lab_2_graphic_editor.Models.Shapes;
+using lab_2_graphic_editor.Services;
 
 namespace lab_2_graphic_editor.Tools
 {
@@ -12,6 +13,11 @@ namespace lab_2_graphic_editor.Tools
         protected Shape currentShape;
         protected bool isDrawing = false;
         protected ShapeBase shapeModel;
+
+        protected ShapeTool(ColorService colorService)
+        {
+            // ColorService передается в конкретные ShapeTool через конструкторы наследников
+        }
 
         public override void OnMouseDown(Point position, Canvas canvas)
         {

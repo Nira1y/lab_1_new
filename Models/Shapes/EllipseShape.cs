@@ -1,4 +1,5 @@
-﻿using System;
+﻿using lab_2_graphic_editor.Services;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -14,7 +15,7 @@ namespace lab_2_graphic_editor.Models.Shapes
     {
         public bool WithFill { get; set; }
 
-        public EllipseShape(bool withFill = false)
+        public EllipseShape(ColorService colorService, bool withFill = false) : base(colorService)
         {
             WithFill = withFill;
         }

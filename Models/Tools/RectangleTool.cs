@@ -1,18 +1,17 @@
-﻿using lab_2_graphic_editor.Models.Shapes;
-using lab_2_graphic_editor.Models.Tools;
-using lab_2_graphic_editor.Tools;
-using System.Windows;
+﻿using System.Windows;
 using System.Windows.Controls;
-using System.Xml.Linq;
+using lab_2_graphic_editor.Models.Tools;
+using lab_2_graphic_editor.Models.Shapes;
+using lab_2_graphic_editor.Services;
 
-namespace lab_2_graphic_editor.Models.Tools
+namespace lab_2_graphic_editor.Tools
 {
     public class RectangleTool : ShapeTool
     {
-        public RectangleTool(bool filled = false)
+        public RectangleTool(ColorService colorService, bool filled = false) : base(colorService)
         {
             Name = filled ? "Прямоугольник (с заливкой)" : "Прямоугольник";
-            shapeModel = new RectangleShape(filled);
+            shapeModel = new RectangleShape(colorService, filled);
         }
     }
 }
