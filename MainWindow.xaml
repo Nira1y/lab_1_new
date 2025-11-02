@@ -16,11 +16,14 @@
     <DockPanel>
         <Menu DockPanel.Dock="Top">
             <MenuItem Header="Файл">
-                <MenuItem Header="Новый"/>
-                <MenuItem Header="Открыть"/>
-                <MenuItem Header="Сохранить"/>
+                <MenuItem Header="Новый" Click="NewProject_Click"/>
+                <MenuItem Header="Открыть" Click="OpenProject_Click"/>
+                <MenuItem Header="Сохранить" Click="SaveProject_Click"/>
                 <Separator/>
-                <MenuItem Header="Выход"/>
+                <MenuItem Header="Экспорт в PNG" Click="ExportToPng_Click"/>
+                <MenuItem Header="Экспорт в JPEG" Click="ExportToJpeg_Click"/>
+                <Separator/>
+                <MenuItem Header="Выход" Click="Exit_Click"/>
             </MenuItem>
             <MenuItem Header="Правка">
             </MenuItem>

@@ -3,11 +3,13 @@ using lab_2_graphic_editor.Services;
 using lab_2_graphic_editor.Tools;
 using lab_2_graphic_editor.Utilities;
 using lab_2_graphic_editor.ViewModel;
+using Microsoft.Win32;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
 using System.Windows.Media;
 using System.Windows.Shapes;
+using lab_2_graphic_editor.Models;
 
 namespace lab_2_graphic_editor
 {
@@ -17,6 +19,8 @@ namespace lab_2_graphic_editor
         private StatusViewModel _statusVM;
         private ColorService _colorService;
         private CursorTool _cursorTool;
+        private FileService _fileService;
+        private string _currentProjectPath;
 
         public MainWindow()
         {
@@ -30,6 +34,7 @@ namespace lab_2_graphic_editor
             _toolManager = new ToolManager();
             _cursorTool = new CursorTool(_colorService);
             _toolManager.CurrentTool = new BrushTool(_colorService);
+            _fileService = new FileService();
 
             DrawingArea.DrawingCanvas.MouseLeftButtonDown += Canvas_MouseLeftButtonDown;
             DrawingArea.DrawingCanvas.MouseMove += Canvas_MouseMove;
@@ -155,6 +160,123 @@ namespace lab_2_graphic_editor
             _cursorTool?.ClearSelection();
             _toolManager.CurrentTool = new TriangleTool(_colorService, true);
             _statusVM.CurrentTool = "Инструмент: Треугольник (с заливкой)";
+        }
+        private void NewProject_Click(object sender, RoutedEventArgs e)
+        {
+            var result = MessageBox.Show("Создать новый проект? Несохраненные изменения будут потеряны.",
+                "Новый проект", MessageBoxButton.YesNo, MessageBoxImage.Question);
+
+            if (result == MessageBoxResult.Yes)
+            {
+                DrawingArea.DrawingCanvas.Children.Clear();
+                _currentProjectPath = null;
+                _statusVM.CurrentTool = "Новый проект";
+            }
+        }
+
+        private void OpenProject_Click(object sender, RoutedEventArgs e)
+        {
+            var openFileDialog = new OpenFileDialog
+            {
+                Filter = "Graphic Editor Project (*.gep)|*.gep|JSON Files (*.json)|*.json|All Files (*.*)|*.*",
+                Title = "Открыть проект"
+            };
+
+            if (openFileDialog.ShowDialog() == true)
+            {
+                try
+                {
+                    _fileService.LoadProject(DrawingArea.DrawingCanvas, openFileDialog.FileName);
+                    _currentProjectPath = openFileDialog.FileName;
+                    _statusVM.CurrentTool = $"Проект: {System.IO.Path.GetFileName(_currentProjectPath)}";
+                }
+                catch (Exception ex)
+                {
+                    MessageBox.Show($"Ошибка при загрузке проекта: {ex.Message}", "Ошибка",
+                        MessageBoxButton.OK, MessageBoxImage.Error);
+                }
+            }
+        }
+
+        private void SaveProject_Click(object sender, RoutedEventArgs e)
+        {
+            if (string.IsNullOrEmpty(_currentProjectPath))
+            {
+                SaveProjectAs_Click(sender, e);
+            }
+            else
+            {
+                 _fileService.SaveProject(DrawingArea.DrawingCanvas, _currentProjectPath);
+                 MessageBox.Show("Проект успешно сохранен!", "Сохранение",
+                 MessageBoxButton.OK, MessageBoxImage.Information);
+
+            }
+        }
+
+        private void SaveProjectAs_Click(object sender, RoutedEventArgs e)
+        {
+            var saveFileDialog = new SaveFileDialog
+            {
+                Filter = "Graphic Editor Project (*.gep)|*.gep|JSON Files (*.json)|*.json|All Files (*.*)|*.*",
+                Title = "Сохранить проект как",
+                DefaultExt = ".gep"
+            };
+
+            if (saveFileDialog.ShowDialog() == true)
+            {
+                _fileService.SaveProject(DrawingArea.DrawingCanvas, saveFileDialog.FileName);
+                _currentProjectPath = saveFileDialog.FileName;
+                MessageBox.Show("Проект успешно сохранен!", "Сохранение", MessageBoxButton.OK, MessageBoxImage.Information);
+   
+            }
+        }
+
+        private void ExportToPng_Click(object sender, RoutedEventArgs e)
+        {
+            var saveFileDialog = new SaveFileDialog
+            {
+                Filter = "PNG Image (*.png)|*.png",
+                Title = "Экспорт в PNG",
+                DefaultExt = ".png"
+            };
+
+            if (saveFileDialog.ShowDialog() == true)
+            {
+               
+                _fileService.ExportToImage(DrawingArea.DrawingCanvas, saveFileDialog.FileName, "png");
+                MessageBox.Show("Изображение успешно экспортировано в PNG!", "Экспорт",
+                MessageBoxButton.OK, MessageBoxImage.Information);
+
+            }
+        }
+
+        private void ExportToJpeg_Click(object sender, RoutedEventArgs e)
+        {
+            var saveFileDialog = new SaveFileDialog
+            {
+                Filter = "JPEG Image (*.jpg)|*.jpg",
+                Title = "Экспорт в JPEG",
+                DefaultExt = ".jpg"
+            };
+
+            if (saveFileDialog.ShowDialog() == true)
+            {
+                _fileService.ExportToImage(DrawingArea.DrawingCanvas, saveFileDialog.FileName, "jpg");
+                MessageBox.Show("Изображение успешно экспортировано в JPEG!", "Экспорт",
+                        MessageBoxButton.OK, MessageBoxImage.Information);
+  
+            }
+        }
+
+        private void Exit_Click(object sender, RoutedEventArgs e)
+        {
+            var result = MessageBox.Show("Выйти из приложения? Несохраненные изменения будут потеряны.",
+                "Выход", MessageBoxButton.YesNo, MessageBoxImage.Question);
+
+            if (result == MessageBoxResult.Yes)
+            {
+                Application.Current.Shutdown();
+            }
         }
 
     }

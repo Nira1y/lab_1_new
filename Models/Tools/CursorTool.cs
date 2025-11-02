@@ -191,13 +191,6 @@ namespace lab_2_graphic_editor.Tools
             shape.StrokeThickness = _originalStrokeThickness + 2;
             shape.StrokeDashArray = new DoubleCollection(new double[] { 4, 2 });
 
-            shape.Effect = new System.Windows.Media.Effects.DropShadowEffect
-            {
-                Color = Colors.Blue,
-                ShadowDepth = 0,
-                BlurRadius = 10,
-                Opacity = 0.7
-            };
         }
 
         private void ClearSelectionFromPrevious()
