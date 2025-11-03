@@ -5,14 +5,16 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:controls="clr-namespace:lab_2_graphic_editor.View.Controls"
         xmlns:local="clr-namespace:lab_2_graphic_editor"
-        xmlns:vm="clr-namespace:lab_2_graphic_editor.ViewModel" xmlns:xctk="http://schemas.xceed.com/wpf/xaml/toolkit"
+        xmlns:vm="clr-namespace:lab_2_graphic_editor.ViewModel" 
+        xmlns:xctk="http://schemas.xceed.com/wpf/xaml/toolkit"
         mc:Ignorable="d"
         Title="MainWindow" Height="800" Width="800">
-    
+
+
     <Window.DataContext>
         <vm:StatusViewModel/>
     </Window.DataContext>
-    
+
     <DockPanel>
         <Menu DockPanel.Dock="Top">
             <MenuItem Header="Файл">
@@ -38,12 +40,11 @@
                 <MenuItem Header="Эллипс (с заливкой)" Click="SelectEllipseFill_Click"/>
                 <MenuItem Header="Треугольник" Click="SelectTriangle_Click"/>
                 <MenuItem Header="Треугольник(с заливкой)" Click="SelectTriangleFill_Click"/>
-                <MenuItem Header="Текст"/>
+                <MenuItem Header="Текст" Click="SelectText_Click"/>
                 <MenuItem Header="Ластник"/>
             </MenuItem>
         </Menu>
-        <ToolBar DockPanel.Dock="Top" Background="LightGray" Cursor="">
-
+        <ToolBar DockPanel.Dock="Top" Background="LightGray">
             <Button Content="Курсор" Click="SelectCursor_Click" ToolTip="Выделение и перемещение" Padding="10,5"/>
             <Button Content="Кисть" Click = "SelectBrush_Click" ToolTip="Кисть для рисования" Padding="10,5"/>
             <Button Content="Ластик" ToolTip="Удаление фигур" Padding="10,5"/>
@@ -57,6 +58,38 @@
                   ToolTip="Выбор цвета"/>
         </ToolBar>
 
+        <!-- ДОБАВЛЕНО: Панель текстовых инструментов -->
+        <ToolBar DockPanel.Dock="Top" Background="LightBlue" 
+                 x:Name="TextToolbarPanel">
+            <TextBlock Text="Текст:" VerticalAlignment="Center" Margin="5,0"/>
+
+            <!-- Выбор шрифта -->
+            <ComboBox ItemsSource="{Binding AvailableFontFamilies}"
+                      SelectedItem="{Binding FontFamily}"
+                      Width="120" Margin="5,0"
+                      ToolTip="Выбор шрифта"/>
+
+            <!-- Размер шрифта -->
+            <ComboBox ItemsSource="{Binding AvailableFontSizes}"
+                      SelectedItem="{Binding FontSize}"
+                      Width="60" Margin="5,0"
+                      ToolTip="Размер шрифта"/>
+
+            <!-- Кнопки стилей -->
+            <Button Content="B" Command="{Binding BoldCommand}" 
+                    FontWeight="Bold" Margin="5,0" Width="25"
+                    ToolTip="Жирный"/>
+            <Button Content="I" Command="{Binding ItalicCommand}" 
+                    FontStyle="Italic" Margin="5,0" Width="25"
+                    ToolTip="Курсив"/>
+
+            <!-- Цвет текста -->
+            <TextBlock Text="Цвет текста:" VerticalAlignment="Center" Margin="10,0,0,0"/>
+            <xctk:ColorPicker SelectedColor="{Binding TextColor, Mode=TwoWay}"
+                      Width="80" Height="25" Margin="5,0"
+                      ToolTip="Цвет текста"/>
+        </ToolBar>
+        
         <StatusBar DockPanel.Dock="Bottom">
             <StatusBarItem>
                 <TextBlock Text="{Binding Coordinates}"/>
@@ -76,4 +109,3 @@
         </Grid>
     </DockPanel>
 </Window>
-

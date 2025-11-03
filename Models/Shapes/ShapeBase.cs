@@ -20,5 +20,9 @@ namespace lab_2_graphic_editor.Models.Shapes
 
         public abstract Shape CreateShape(Point startPoint, Point endPoint);
         public abstract void UpdateShape(Shape shape, Point startPoint, Point endPoint);
+        public virtual void SetColor(Color color)
+        {
+
+        }
     }
 }

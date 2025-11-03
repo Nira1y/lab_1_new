@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using System.Windows;
 using System.Windows.Media;
 
 namespace lab_2_graphic_editor.Models
@@ -6,7 +7,8 @@ namespace lab_2_graphic_editor.Models
     public class ProjectData
     {
         public List<ShapeData> Shapes { get; set; } = new List<ShapeData>();
-        public CanvasData Canvas { get; set; } = new CanvasData(); 
+        public List<TextData> Texts { get; set; } = new List<TextData>();
+        public CanvasData Canvas { get; set; } = new CanvasData();
     }
 
     public class ShapeData
@@ -19,6 +21,57 @@ namespace lab_2_graphic_editor.Models
         public bool IsFilled { get; set; }
         public List<PointData> BrushPoints { get; set; } = new List<PointData>();
         public double BrushSize { get; set; } = 3;
+    }
+
+    public class TextData
+    {
+        public string Text { get; set; } = "";
+        public double X { get; set; }
+        public double Y { get; set; }
+        public ColorData Color { get; set; } = new ColorData(Colors.Black);
+        public string FontFamily { get; set; } = "Arial";
+        public double FontSize { get; set; } = 12;
+        public FontWeightData FontWeight { get; set; } = new FontWeightData(FontWeights.Normal);
+        public FontStyleData FontStyle { get; set; } = new FontStyleData(FontStyles.Normal);
+    }
+
+    public class FontWeightData
+    {
+        public int Weight { get; set; }
+
+        public FontWeightData() { }
+
+        public FontWeightData(FontWeight fontWeight)
+        {
+            Weight = fontWeight.ToOpenTypeWeight();
+        }
+
+        public FontWeight ToFontWeight()
+        {
+            return FontWeight.FromOpenTypeWeight(Weight);
+        }
+    }
+
+    public class FontStyleData
+    {
+        public string Style { get; set; }
+
+        public FontStyleData() { }
+
+        public FontStyleData(FontStyle fontStyle)
+        {
+            Style = fontStyle.ToString();
+        }
+
+        public FontStyle ToFontStyle()
+        {
+            return Style switch
+            {
+                "Italic" => FontStyles.Italic,
+                "Oblique" => FontStyles.Oblique,
+                _ => FontStyles.Normal
+            };
+        }
     }
 
     public class PointData

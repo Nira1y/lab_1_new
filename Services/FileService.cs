@@ -16,40 +16,48 @@ namespace lab_2_graphic_editor.Services
     {
         public void SaveProject(Canvas canvas, string filePath)
         {
-                Color backgroundColor = Colors.White;
-                if (canvas.Background is SolidColorBrush solidBrush)
-                {
-                    backgroundColor = solidBrush.Color;
-                }
+            Color backgroundColor = Colors.White;
+            if (canvas.Background is SolidColorBrush solidBrush)
+            {
+                backgroundColor = solidBrush.Color;
+            }
 
-                var projectData = new ProjectData
+            var projectData = new ProjectData
+            {
+                Canvas = new CanvasData
                 {
-                    Canvas = new CanvasData
-                    {
-                        Width = canvas.ActualWidth > 0 ? canvas.ActualWidth : canvas.Width,
-                        Height = canvas.ActualHeight > 0 ? canvas.ActualHeight : canvas.Height,
-                        Background = new ColorData(backgroundColor)
-                    },
-                    Shapes = new List<ShapeData>()
-                };
+                    Width = canvas.ActualWidth > 0 ? canvas.ActualWidth : canvas.Width,
+                    Height = canvas.ActualHeight > 0 ? canvas.ActualHeight : canvas.Height,
+                    Background = new ColorData(backgroundColor)
+                },
+                Shapes = new List<ShapeData>(),
+                Texts = new List<TextData>() 
+            };
 
-                foreach (var child in canvas.Children)
+            foreach (var child in canvas.Children)
+            {
+                if (child is Shape shape)
                 {
-                    if (child is Shape shape)
+                    var shapeData = ConvertShapeToData(shape);
+                    if (shapeData != null)
                     {
-                        var shapeData = ConvertShapeToData(shape);
-                        if (shapeData != null)
-                        {
-                            projectData.Shapes.Add(shapeData);
-                        }
+                        projectData.Shapes.Add(shapeData);
                     }
                 }
 
-                string json = JsonConvert.SerializeObject(projectData, Formatting.Indented);
-                File.WriteAllText(filePath, json);
+                else if (child is TextBox textBox)
+                {
+                    var textData = ConvertTextBoxToData(textBox);
+                    if (textData != null)
+                    {
+                        projectData.Texts.Add(textData);
+                    }
+                }
+            }
+
+            string json = JsonConvert.SerializeObject(projectData, Formatting.Indented);
+            File.WriteAllText(filePath, json);
         }
-
-
 
         public void LoadProject(Canvas canvas, string filePath)
         {
@@ -88,17 +96,26 @@ namespace lab_2_graphic_editor.Services
                     var shape = ConvertDataToShape(shapeData);
                     if (shape != null)
                     {
-                       canvas.Children.Add(shape);
+                        canvas.Children.Add(shape);
+                    }
+                }
+            }
+
+            if (projectData.Texts != null)
+            {
+                foreach (var textData in projectData.Texts)
+                {
+                    var textBox = ConvertDataToTextBox(textData);
+                    if (textBox != null)
+                    {
+                        canvas.Children.Add(textBox);
                     }
                 }
             }
         }
-        
-      
 
         public void ExportToImage(Canvas canvas, string filePath, string format = "png")
         {
-
             if (canvas.ActualWidth == 0 || canvas.ActualHeight == 0)
             {
                 canvas.Width = 800;
@@ -125,7 +142,54 @@ namespace lab_2_graphic_editor.Services
             {
                 encoder.Save(fileStream);
             }
-            
+        }
+
+        private TextData ConvertTextBoxToData(TextBox textBox)
+        {
+            if (textBox == null) return null;
+
+            return new TextData
+            {
+                Text = textBox.Text,
+                X = Canvas.GetLeft(textBox),
+                Y = Canvas.GetTop(textBox),
+                Color = textBox.Foreground is SolidColorBrush foregroundBrush
+                    ? new ColorData(foregroundBrush.Color)
+                    : new ColorData(Colors.Black),
+                FontFamily = textBox.FontFamily?.Source ?? "Arial",
+                FontSize = textBox.FontSize,
+                FontWeight = new FontWeightData(textBox.FontWeight),
+                FontStyle = new FontStyleData(textBox.FontStyle)
+            };
+        }
+
+        private TextBox ConvertDataToTextBox(TextData textData)
+        {
+            if (textData == null) return null;
+
+            var textBox = new TextBox
+            {
+                Text = textData.Text,
+                Foreground = new SolidColorBrush(textData.Color.ToColor()),
+                FontFamily = new FontFamily(textData.FontFamily),
+                FontSize = textData.FontSize,
+                FontWeight = textData.FontWeight.ToFontWeight(),
+                FontStyle = textData.FontStyle.ToFontStyle(),
+                Background = Brushes.Transparent,
+                BorderThickness = new Thickness(0),
+                Padding = new Thickness(2),
+                MinWidth = 50,
+                TextWrapping = TextWrapping.Wrap,
+                AcceptsReturn = true,
+                VerticalScrollBarVisibility = ScrollBarVisibility.Auto,
+                IsHitTestVisible = false, 
+                Focusable = false
+            };
+
+            Canvas.SetLeft(textBox, textData.X);
+            Canvas.SetTop(textBox, textData.Y);
+
+            return textBox;
         }
 
         private ShapeData ConvertShapeToData(Shape shape)
@@ -338,7 +402,6 @@ namespace lab_2_graphic_editor.Services
                     break;
 
                 default:
-
                     return null;
             }
             return shape;
