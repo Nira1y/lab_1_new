@@ -80,14 +80,8 @@ namespace lab_2_graphic_editor
                 }
                 else
                 {
-                    if (cursorTool.SelectedElement is TextBox)
-                    {
-                        cursorTool.ChangeTextColor(color);
-                    }
-                    else if (cursorTool.SelectedElement is Shape)
-                    {
-                        cursorTool.ChangeStrokeColor(color);
-                    }
+                    cursorTool.ChangeTextColor(color);
+                    cursorTool.ChangeStrokeColor(color);
                 }
             }
             else if (_toolManager.CurrentTool is TextTool textTool)
@@ -100,7 +94,7 @@ namespace lab_2_graphic_editor
         {
             if (e.Key == Key.Delete && _toolManager.CurrentTool is CursorTool cursorTool)
             {
-                cursorTool.DeleteSelectedShape(DrawingArea.DrawingCanvas);
+                cursorTool.DeleteSelectedShape();
                 e.Handled = true;
             }
 
@@ -116,6 +110,33 @@ namespace lab_2_graphic_editor
             {
                 cursorToolEdit.StartTextEditing();
                 e.Handled = true;
+            }
+
+            if (Keyboard.Modifiers == (ModifierKeys.Control | ModifierKeys.Shift))
+            {
+                if (e.Key == Key.Up && _toolManager.CurrentTool is CursorTool cursorToolFront)
+                {
+                    cursorToolFront.BringToFront();
+                    e.Handled = true;
+                }
+                else if (e.Key == Key.Down && _toolManager.CurrentTool is CursorTool cursorToolBack)
+                {
+                    cursorToolBack.SendToBack();
+                    e.Handled = true;
+                }
+                else if (e.Key == Key.G && _toolManager.CurrentTool is CursorTool cursorToolUngroup)
+                {
+                    cursorToolUngroup.UngroupSelectedElements();
+                    e.Handled = true;
+                }
+            }
+            else if (Keyboard.Modifiers == ModifierKeys.Control)
+            {
+                if (e.Key == Key.G && _toolManager.CurrentTool is CursorTool cursorToolGroup)
+                {
+                    cursorToolGroup.GroupSelectedElements();
+                    e.Handled = true;
+                }
             }
         }
 
@@ -214,7 +235,6 @@ namespace lab_2_graphic_editor
             _toolManager.CurrentTool = new TriangleTool(_colorService, true);
             _statusVM.CurrentTool = "Инструмент: Треугольник (с заливкой)";
         }
-
         private void SelectText_Click(object sender, RoutedEventArgs e)
         {
             _cursorTool?.ClearSelection();
@@ -224,6 +244,12 @@ namespace lab_2_graphic_editor
             _textViewModel.ApplyToTextTool(_textTool);
         }
 
+        private void SelectEraser_Click(object sender, RoutedEventArgs e)
+        {
+            _cursorTool?.ClearSelection();
+            _toolManager.CurrentTool = new EraserTool();
+            _statusVM.CurrentTool = "Инструмент: Ластик";
+        }
         #endregion
 
         #region Обработчики текста
@@ -372,5 +398,41 @@ namespace lab_2_graphic_editor
         }
 
         #endregion
+        #region Z-Order и Группировка
+
+        private void BringToFront_Click(object sender, RoutedEventArgs e)
+        {
+            if (_toolManager.CurrentTool is CursorTool cursorTool)
+            {
+                cursorTool.BringToFront();
+            }
+        }
+
+        private void SendToBack_Click(object sender, RoutedEventArgs e)
+        {
+            if (_toolManager.CurrentTool is CursorTool cursorTool)
+            {
+                cursorTool.SendToBack();
+            }
+        }
+
+        private void GroupElements_Click(object sender, RoutedEventArgs e)
+        {
+            if (_toolManager.CurrentTool is CursorTool cursorTool)
+            {
+                cursorTool.GroupSelectedElements();
+            }
+        }
+
+        private void UngroupElements_Click(object sender, RoutedEventArgs e)
+        {
+            if (_toolManager.CurrentTool is CursorTool cursorTool)
+            {
+                cursorTool.UngroupSelectedElements();
+            }
+        }
+
+        #endregion
+
     }
 }

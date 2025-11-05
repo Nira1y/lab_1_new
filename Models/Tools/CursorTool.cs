@@ -1,6 +1,8 @@
 ﻿using lab_2_graphic_editor.Models.Texts;
 using lab_2_graphic_editor.Models.Tools;
 using lab_2_graphic_editor.Services;
+using System;
+using System.Collections.Generic;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
@@ -13,13 +15,24 @@ namespace lab_2_graphic_editor.Tools
     {
         private Point _startPoint;
         private bool _isDragging = false;
+        private bool _isResizing = false;
+        private bool _isRotating = false;
         private UIElement _selectedElement;
         private readonly ColorService _colorService;
         private Point _elementStartPosition;
-        private Brush _originalStroke;
-        private double _originalStrokeThickness;
-        private DoubleCollection _originalStrokeDashArray;
         private bool _isAlreadySelected = false;
+        private ResizeService.ResizeHandle _activeResizeHandle;
+        private RotateHandle _rotateHandle;
+        private List<UIElement> _selectionGroup = new List<UIElement>();
+        private bool _isGroupSelected = false;
+        private Canvas _currentCanvas;
+
+        private readonly SelectionService _selectionService;
+        private readonly ResizeService _resizeService;
+        private readonly RotationService _rotationService;
+        private readonly HandleService _handleService;
+        private readonly ZOrderService _zOrderService;
+        private readonly GroupingService _groupingService;
 
         private static UIElement _currentlySelectedElement;
         private static CursorTool _currentInstance;
@@ -31,83 +44,268 @@ namespace lab_2_graphic_editor.Tools
             Name = "Курсор";
             _colorService = colorService;
             _currentInstance = this;
+
+            _selectionService = new SelectionService();
+            _resizeService = new ResizeService();
+            _rotationService = new RotationService();
+            _handleService = new HandleService();
+            _zOrderService = new ZOrderService();
+            _groupingService = new GroupingService();
         }
 
         public UIElement SelectedElement => _selectedElement;
-        public bool HasSelection => _selectedElement != null;
+        public bool HasSelection => _selectedElement != null || _selectionGroup.Count > 0;
 
         public override void OnMouseDown(Point position, Canvas canvas)
         {
-            if (_currentlySelectedElement != null)
+            if (canvas == null) return;
+
+            _currentCanvas = canvas;
+
+            _activeResizeHandle = _handleService.GetResizeHandleAtPosition(position, canvas);
+            _isRotating = IsRotateHandleAtPosition(position, canvas);
+
+            if (_activeResizeHandle != ResizeService.ResizeHandle.None || _isRotating)
             {
-                ClearSelectionFromPrevious();
-                _isAlreadySelected = false;
+                _isResizing = _activeResizeHandle != ResizeService.ResizeHandle.None;
+                _startPoint = position;
+                return;
             }
 
-            _selectedElement = FindElementAtPosition(position, canvas);
+            UIElement clickedElement = _selectionService.FindElementAtPosition(position, canvas);
 
-            if (_selectedElement != null)
+            bool isMultiSelect = Keyboard.IsKeyDown(Key.LeftCtrl) ||
+                                 Keyboard.IsKeyDown(Key.RightCtrl) ||
+                                 Keyboard.IsKeyDown(Key.LeftShift) ||
+                                 Keyboard.IsKeyDown(Key.RightShift);
+
+            if (clickedElement != null)
             {
+  
+                if (clickedElement is Canvas && _isGroupSelected)
+                {
+                    HandleGroupSelection(clickedElement, position, isMultiSelect);
+                }
+                else
+                {
+                    HandleSingleElementSelection(clickedElement, position, isMultiSelect);
+                }
+            }
+            else
+            {
+                if (!isMultiSelect)
+                {
+                    ClearAllSelections();
+                    _isAlreadySelected = false;
+                    RemoveHandles(canvas);
+                }
+            }
+        }
+
+        private void HandleGroupSelection(UIElement clickedElement, Point position, bool isMultiSelect)
+        {
+            if (!isMultiSelect)
+            {
+                ClearSelectionGroup();
+
+                if (_currentlySelectedElement != null && _currentlySelectedElement != clickedElement)
+                {
+                    ClearSelectionFromPrevious();
+                    _isAlreadySelected = false;
+                }
+
                 _isDragging = true;
                 _startPoint = position;
+                _selectedElement = clickedElement;
                 _elementStartPosition = GetElementPosition(_selectedElement);
 
                 if (!_isAlreadySelected || _selectedElement != _currentlySelectedElement)
                 {
-                    SaveOriginalProperties(_selectedElement);
+                    _selectionService.SaveOriginalProperties(_selectedElement);
                     _isAlreadySelected = true;
                 }
 
-                HighlightSelectedElement(_selectedElement);
+                _selectionService.HighlightSelectedElement(_selectedElement);
+                _currentlySelectedElement = _selectedElement;
+
+                _handleService.CreateResizeHandles(_currentCanvas, _selectedElement);
+                CreateRotateHandle(_currentCanvas);
+            }
+            else
+            {
+                ClearAllSelections();
+                HandleGroupSelection(clickedElement, position, false);
+            }
+        }
+
+        private void HandleSingleElementSelection(UIElement clickedElement, Point position, bool isMultiSelect)
+        {
+            if (isMultiSelect)
+            {
+                if (_selectionGroup.Contains(clickedElement))
+                {
+                    RemoveFromSelectionGroup(clickedElement);
+                }
+                else
+                {
+                    AddToSelectionGroup(clickedElement);
+                    _isDragging = true;
+                    _startPoint = position;
+                    _selectedElement = clickedElement;
+                    _elementStartPosition = GetElementPosition(clickedElement);
+                }
+            }
+            else
+            {
+                ClearSelectionGroup();
+
+                if (_currentlySelectedElement != null && _currentlySelectedElement != clickedElement)
+                {
+                    ClearSelectionFromPrevious();
+                    _isAlreadySelected = false;
+                }
+
+                _isDragging = true;
+                _startPoint = position;
+                _selectedElement = clickedElement;
+                _elementStartPosition = GetElementPosition(_selectedElement);
+
+                if (!_isAlreadySelected || _selectedElement != _currentlySelectedElement)
+                {
+                    _selectionService.SaveOriginalProperties(_selectedElement);
+                    _isAlreadySelected = true;
+                }
+
+                _selectionService.HighlightSelectedElement(_selectedElement);
                 _currentlySelectedElement = _selectedElement;
 
                 if (_selectedElement is TextBox textBox)
                 {
                     MakeTextBoxNonEditable(textBox);
                 }
+
+                _handleService.CreateResizeHandles(_currentCanvas, _selectedElement);
+                CreateRotateHandle(_currentCanvas);
+            }
+        }
+        public override void OnMouseMove(Point position, Canvas canvas)
+        {
+            if (canvas == null) return;
+
+            if (_isDragging && _selectedElement != null)
+            {
+                double deltaX, deltaY;
+                if (_isGroupSelected)
+                {
+                    deltaX = position.X - _startPoint.X;
+                    deltaY = position.Y - _startPoint.Y;
+                }
+                else if (_selectedElement is Polygon polygon && polygon.RenderTransform is RotateTransform rotateTransform)
+                {
+                    Point center = _rotationService.GetElementCenter(polygon);
+
+                    double angleRad = -rotateTransform.Angle * Math.PI / 180.0;
+                    double cos = Math.Cos(angleRad);
+                    double sin = Math.Sin(angleRad);
+
+
+                    double relX = position.X - _startPoint.X;
+                    double relY = position.Y - _startPoint.Y;
+
+                    deltaX = relX * cos - relY * sin;
+                    deltaY = relX * sin + relY * cos;
+                }
+                else if (_selectedElement is Line line && line.RenderTransform is RotateTransform lineRotateTransform)
+                {
+                    Point center = _rotationService.GetElementCenter(line);
+
+                    double angleRad = -lineRotateTransform.Angle * Math.PI / 180.0;
+                    double cos = Math.Cos(angleRad);
+                    double sin = Math.Sin(angleRad);
+
+                    double relX = position.X - _startPoint.X;
+                    double relY = position.Y - _startPoint.Y;
+
+
+                    deltaX = relX * cos - relY * sin;
+                    deltaY = relX * sin + relY * cos;
+                }
+                else
+                {
+
+                    deltaX = position.X - _startPoint.X;
+                    deltaY = position.Y - _startPoint.Y;
+                }
+
+                double newX = _elementStartPosition.X + deltaX;
+                double newY = _elementStartPosition.Y + deltaY;
+
+                MoveElementToPosition(_selectedElement, newX, newY);
+                UpdateHandlesPosition(canvas);
+            }
+            else if (_isResizing && _selectedElement != null)
+            {
+                _resizeService.ResizeElement(_selectedElement, _activeResizeHandle, _startPoint, position);
+                _startPoint = position;
+                UpdateHandlesPosition(canvas);
+            }
+            else if (_isRotating && _selectedElement != null)
+            {
+                Point center = _rotationService.GetElementCenter(_selectedElement);
+                _rotationService.RotateElement(_selectedElement, center, _startPoint, position);
+                _startPoint = position;
+                UpdateHandlesPosition(canvas);
+            }
+        }
+
+        private void MoveElementToPosition(UIElement element, double newX, double newY)
+        {
+            if (element is Line line)
+            {
+                double width = line.X2 - line.X1;
+                double height = line.Y2 - line.Y1;
+
+                line.X1 = newX;
+                line.Y1 = newY;
+                line.X2 = newX + width;
+                line.Y2 = newY + height;
+            }
+            else if (element is Polygon polygon)
+            {
+                Point currentCenter = GetPolygonCenter(polygon);
+
+                double deltaX = newX - currentCenter.X;
+                double deltaY = newY - currentCenter.Y;
+
+                PointCollection newPoints = new PointCollection();
+                foreach (Point point in polygon.Points)
+                {
+                    newPoints.Add(new Point(point.X + deltaX, point.Y + deltaY));
+                }
+                polygon.Points = newPoints;
+            }
+            else if (element is TextBox textBox)
+            {
+                Canvas.SetLeft(textBox, newX);
+                Canvas.SetTop(textBox, newY);
             }
             else
             {
-                ClearAllSelections();
-                _isAlreadySelected = false;
+                Canvas.SetLeft(element, newX);
+                Canvas.SetTop(element, newY);
             }
         }
 
-        public override void OnMouseMove(Point position, Canvas canvas)
-        {
-            if (_isDragging && _selectedElement != null)
-            {
-                double deltaX = position.X - _startPoint.X;
-                double deltaY = position.Y - _startPoint.Y;
-
-                MoveElement(_selectedElement, _elementStartPosition, deltaX, deltaY);
-            }
-        }
 
         public override void OnMouseUp(Point position, Canvas canvas)
         {
             _isDragging = false;
+            _isResizing = false;
+            _isRotating = false;
+            _activeResizeHandle = ResizeService.ResizeHandle.None;
         }
 
-        private UIElement FindElementAtPosition(Point position, Canvas canvas)
-        {
-            HitTestResult hitTestResult = VisualTreeHelper.HitTest(canvas, position);
-
-            if (hitTestResult != null)
-            {
-                DependencyObject current = hitTestResult.VisualHit;
-                while (current != null && current != canvas)
-                {
-                    if (current is Shape shape || current is TextBox textBox)
-                    {
-                        return current as UIElement;
-                    }
-                    current = VisualTreeHelper.GetParent(current);
-                }
-            }
-
-            return null;
-        }
+        #region Basic Selection and Movement
 
         private Point GetElementPosition(UIElement element)
         {
@@ -134,97 +332,20 @@ namespace lab_2_graphic_editor.Tools
             }
         }
 
-        private void MoveElement(UIElement element, Point startPosition, double deltaX, double deltaY)
-        {
-            if (element is Line line)
-            {
-                double originalWidth = line.X2 - line.X1;
-                double originalHeight = line.Y2 - line.Y1;
-
-                line.X1 = startPosition.X + deltaX;
-                line.Y1 = startPosition.Y + deltaY;
-
-                line.X2 = line.X1 + originalWidth;
-                line.Y2 = line.Y1 + originalHeight;
-            }
-            else if (element is Polygon polygon)
-            {
-                PointCollection newPoints = new PointCollection();
-                Point oldCenter = GetPolygonCenter(polygon);
-
-                foreach (Point point in polygon.Points)
-                {
-                    double offsetX = point.X - oldCenter.X;
-                    double offsetY = point.Y - oldCenter.Y;
-                    double newX = startPosition.X + deltaX + offsetX;
-                    double newY = startPosition.Y + deltaY + offsetY;
-                    newPoints.Add(new Point(newX, newY));
-                }
-
-                polygon.Points = newPoints;
-            }
-            else if (element is TextBox textBox)
-            {
-                // TextBox перемещаем всегда
-                double newLeft = startPosition.X + deltaX;
-                double newTop = startPosition.Y + deltaY;
-
-                Canvas.SetLeft(textBox, newLeft);
-                Canvas.SetTop(textBox, newTop);
-            }
-            else
-            {
-                double newLeft = startPosition.X + deltaX;
-                double newTop = startPosition.Y + deltaY;
-
-                Canvas.SetLeft(element, newLeft);
-                Canvas.SetTop(element, newTop);
-            }
-        }
-
         private Point GetPolygonCenter(Polygon polygon)
         {
             if (polygon.Points.Count == 0) return new Point(0, 0);
 
-            double minX = polygon.Points[0].X;
-            double maxX = polygon.Points[0].X;
-            double minY = polygon.Points[0].Y;
-            double maxY = polygon.Points[0].Y;
+            double sumX = 0;
+            double sumY = 0;
 
             foreach (Point point in polygon.Points)
             {
-                if (point.X < minX) minX = point.X;
-                if (point.X > maxX) maxX = point.X;
-                if (point.Y < minY) minY = point.Y;
-                if (point.Y > maxY) maxY = point.Y;
+                sumX += point.X;
+                sumY += point.Y;
             }
 
-            return new Point((minX + maxX) / 2, (minY + maxY) / 2);
-        }
-
-        private void SaveOriginalProperties(UIElement element)
-        {
-            if (element is Shape shape)
-            {
-                _originalStroke = shape.Stroke;
-                _originalStrokeThickness = shape.StrokeThickness;
-                _originalStrokeDashArray = shape.StrokeDashArray;
-            }
-        }
-
-        private void HighlightSelectedElement(UIElement element)
-        {
-            if (element is Shape shape)
-            {
-                shape.Stroke = Brushes.Blue;
-                shape.StrokeThickness = _originalStrokeThickness + 2;
-                shape.StrokeDashArray = new DoubleCollection(new double[] { 4, 2 });
-            }
-            else if (element is TextBox textBox)
-            {
-                textBox.BorderThickness = new Thickness(2);
-                textBox.BorderBrush = Brushes.Blue;
-            }
+            return new Point(sumX / polygon.Points.Count, sumY / polygon.Points.Count);
         }
 
         private void MakeTextBoxNonEditable(TextBox textBox)
@@ -234,29 +355,12 @@ namespace lab_2_graphic_editor.Tools
             textBox.Cursor = Cursors.SizeAll;
         }
 
-        private static void MakeTextBoxEditable(TextBox textBox)
-        {
-            textBox.IsHitTestVisible = true;
-            textBox.Focusable = true;
-            textBox.Cursor = Cursors.IBeam;
-        }
 
         private void ClearSelectionFromPrevious()
         {
             if (_currentlySelectedElement != null)
             {
-                if (_currentlySelectedElement is Shape shape)
-                {
-                    shape.Stroke = _originalStroke;
-                    shape.StrokeThickness = _originalStrokeThickness;
-                    shape.StrokeDashArray = _originalStrokeDashArray;
-                }
-                else if (_currentlySelectedElement is TextBox textBox)
-                {
-                    textBox.BorderThickness = new Thickness(0);
-                    MakeTextBoxNonEditable(textBox);
-                }
-
+                _selectionService.ClearElementHighlight(_currentlySelectedElement);
                 _currentlySelectedElement = null;
                 _isAlreadySelected = false;
             }
@@ -266,50 +370,243 @@ namespace lab_2_graphic_editor.Tools
         {
             if (_selectedElement != null)
             {
-                if (_selectedElement is Shape shape)
-                {
-                    shape.Stroke = _originalStroke;
-                    shape.StrokeThickness = _originalStrokeThickness;
-                    shape.StrokeDashArray = _originalStrokeDashArray;
-                }
-                else if (_selectedElement is TextBox textBox)
-                {
-                    textBox.BorderThickness = new Thickness(0);
-                    MakeTextBoxNonEditable(textBox);
-                }
-
+                _selectionService.ClearElementHighlight(_selectedElement);
                 _selectedElement = null;
                 _currentlySelectedElement = null;
                 _isDragging = false;
                 _isAlreadySelected = false;
+                _isGroupSelected = false;
+            }
+            ClearSelectionGroup();
+
+            if (_currentCanvas != null)
+            {
+                RemoveHandles(_currentCanvas);
             }
         }
 
-        public void DeleteSelectedShape(Canvas canvas)
+        public static void ClearAllSelections()
         {
-            if (_selectedElement != null)
+            if (_currentlySelectedElement != null && _currentInstance != null)
             {
-                canvas.Children.Remove(_selectedElement);
-                ClearSelection();
+                _currentInstance.ClearSelection();
             }
+        }
+
+        #endregion
+
+        #region Rotation Handles
+
+        private void CreateRotateHandle(Canvas canvas)
+        {
+            if (canvas == null || _selectedElement == null) return;
+
+            RemoveRotateHandle(canvas);
+
+            Rect bounds = _resizeService.GetElementBounds(_selectedElement);
+            Point rotateHandlePosition = new Point(bounds.Left + bounds.Width / 2, bounds.Top - 30);
+
+            _rotateHandle = new RotateHandle
+            {
+                Position = rotateHandlePosition,
+                Visual = new Ellipse
+                {
+                    Width = 12,
+                    Height = 12,
+                    Fill = Brushes.White,
+                    Stroke = Brushes.Black,
+                    StrokeThickness = 1
+                }
+            };
+
+            Canvas.SetLeft(_rotateHandle.Visual, rotateHandlePosition.X - 6);
+            Canvas.SetTop(_rotateHandle.Visual, rotateHandlePosition.Y - 6);
+            canvas.Children.Add(_rotateHandle.Visual);
+        }
+
+        private bool IsRotateHandleAtPosition(Point position, Canvas canvas)
+        {
+            if (canvas == null || _rotateHandle?.Visual == null) return false;
+
+            double left = Canvas.GetLeft(_rotateHandle.Visual);
+            double top = Canvas.GetTop(_rotateHandle.Visual);
+
+            Rect handleBounds = new Rect(left, top, _rotateHandle.Visual.Width, _rotateHandle.Visual.Height);
+
+            Rect expandedBounds = new Rect(
+                handleBounds.X - 3,
+                handleBounds.Y - 3,
+                handleBounds.Width + 6,
+                handleBounds.Height + 6
+            );
+
+            return expandedBounds.Contains(position);
+        }
+
+        private void RemoveRotateHandle(Canvas canvas)
+        {
+            if (canvas == null || _rotateHandle?.Visual == null) return;
+
+            canvas.Children.Remove(_rotateHandle.Visual);
+            _rotateHandle = null;
+        }
+
+        #endregion
+
+        #region Z-Order Management
+
+        public void BringToFront()
+        {
+            if (_currentCanvas == null || _selectedElement == null) return;
+
+            _zOrderService.BringToFront(_currentCanvas, _selectedElement);
+        }
+
+        public void SendToBack()
+        {
+            if (_currentCanvas == null || _selectedElement == null) return;
+
+            _zOrderService.SendToBack(_currentCanvas, _selectedElement);
+        }
+
+        #endregion
+
+        #region Grouping Functionality
+
+        public void AddToSelectionGroup(UIElement element)
+        {
+            if (!_selectionGroup.Contains(element))
+            {
+                _selectionGroup.Add(element);
+                _selectionService.HighlightSelectedElement(element);
+            }
+        }
+
+        public void RemoveFromSelectionGroup(UIElement element)
+        {
+            _selectionGroup.Remove(element);
+            _selectionService.ClearElementHighlight(element);
+        }
+
+        public void ClearSelectionGroup()
+        {
+            foreach (var element in _selectionGroup)
+            {
+                _selectionService.ClearElementHighlight(element);
+            }
+            _selectionGroup.Clear();
+            _isGroupSelected = false;
+        }
+
+        public void GroupSelectedElements()
+        {
+            if (_currentCanvas == null) return;
+
+            // Создаем список всех выделенных элементов
+            var allSelectedElements = new List<UIElement>();
+
+            if (_selectedElement != null && !_selectionGroup.Contains(_selectedElement))
+            {
+                allSelectedElements.Add(_selectedElement);
+            }
+
+            allSelectedElements.AddRange(_selectionGroup);
+
+            if (allSelectedElements.Count < 2)
+            {
+                MessageBox.Show("Для группировки необходимо выделить как минимум 2 элемента");
+                return;
+            }
+
+            var groupContainer = _groupingService.GroupElements(_currentCanvas, allSelectedElements);
+            if (groupContainer != null)
+            {
+                _isGroupSelected = true;
+                ClearSelectionGroup();
+                if (_selectedElement != null)
+                {
+                    _selectionService.ClearElementHighlight(_selectedElement);
+                }
+                _selectedElement = groupContainer;
+                _currentlySelectedElement = groupContainer;
+
+                _selectionService.HighlightSelectedElement(groupContainer);
+                _handleService.CreateResizeHandles(_currentCanvas, groupContainer);
+                CreateRotateHandle(_currentCanvas);
+            }
+        }
+
+        public void UngroupSelectedElements()
+        {
+            if (_currentCanvas == null || _selectedElement is not Canvas groupContainer || !_isGroupSelected) return;
+
+            _groupingService.UngroupElements(_currentCanvas, groupContainer);
+
+            _selectedElement = null;
+            _currentlySelectedElement = null;
+            _isGroupSelected = false;
+
+            RemoveHandles(_currentCanvas);
+        }
+
+        #endregion
+
+        #region Helper Methods
+
+        private void UpdateHandlesPosition(Canvas canvas)
+        {
+            if (canvas == null) return;
+
+            RemoveHandles(canvas);
+            _handleService.CreateResizeHandles(canvas, _selectedElement);
+            CreateRotateHandle(canvas);
+        }
+
+        private void RemoveHandles(Canvas canvas)
+        {
+            if (canvas == null) return;
+
+            _handleService.RemoveResizeHandles(canvas);
+            RemoveRotateHandle(canvas);
+        }
+
+        #endregion
+
+        #region Text Editing
+
+        public void DeleteSelectedShape()
+        {
+            if (_currentCanvas == null || _selectedElement == null) return;
+
+            _currentCanvas.Children.Remove(_selectedElement);
+            ClearSelection();
         }
 
         public void ChangeStrokeColor(Color color)
         {
-            if (_selectedElement is Shape shape)
+            if (_selectedElement != null)
             {
-                shape.Stroke = new SolidColorBrush(color);
-                _originalStroke = new SolidColorBrush(color);
+                _selectionService.UpdateStrokeColor(_selectedElement, color);
+            }
+            foreach (var element in _selectionGroup)
+            {
+                _selectionService.UpdateStrokeColor(element, color);
             }
         }
 
         public void ChangeFillColor(Color color)
         {
-            if (_selectedElement is Shape shape && shape is not Line)
+            if (_selectedElement != null)
             {
-                shape.Fill = new SolidColorBrush(color);
+                _selectionService.UpdateFillColor(_selectedElement, color);
+            }
+
+            foreach (var element in _selectionGroup)
+            {
+                _selectionService.UpdateFillColor(element, color);
             }
         }
+
 
         public void ChangeTextColor(Color color)
         {
@@ -376,12 +673,37 @@ namespace lab_2_graphic_editor.Tools
             }
         }
 
-        public static void ClearAllSelections()
+        #endregion
+        public void ChangeStrokeOrTextColor(Color color)
         {
-            if (_currentlySelectedElement != null && _currentInstance != null)
+            if (_selectedElement != null)
             {
-                _currentInstance.ClearSelection();
+                if (_selectedElement is TextBox textBox)
+                {
+                    textBox.Foreground = new SolidColorBrush(color);
+                }
+                else if (_selectedElement is Shape shape)
+                {
+                    shape.Stroke = new SolidColorBrush(color);
+                }
             }
+
+            foreach (var element in _selectionGroup)
+            {
+                if (element is TextBox textBox)
+                {
+                    textBox.Foreground = new SolidColorBrush(color);
+                }
+                else if (element is Shape shape)
+                {
+                    shape.Stroke = new SolidColorBrush(color);
+                }
+            }
+        }
+        private class RotateHandle
+        {
+            public Point Position { get; set; }
+            public Shape Visual { get; set; }
         }
     }
 }
