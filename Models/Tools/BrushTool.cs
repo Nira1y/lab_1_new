@@ -1,13 +1,12 @@
 ﻿using lab_2_graphic_editor.Commands;
-using lab_2_graphic_editor.Models.Tools;
-using lab_2_graphic_editor.Services;
 using System.Collections.Generic;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Media;
 using System.Windows.Shapes;
+using lab_2_graphic_editor.Services;
 
-namespace lab_2_graphic_editor.Tools
+namespace lab_2_graphic_editor.Models.Tools
 {
     public class BrushTool : Tool
     {

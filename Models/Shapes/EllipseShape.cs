@@ -1,9 +1,4 @@
 ﻿using lab_2_graphic_editor.Services;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Media;
@@ -19,6 +14,7 @@ namespace lab_2_graphic_editor.Models.Shapes
         {
             WithFill = withFill;
         }
+
         public override Shape CreateShape(Point startPoint, Point endPoint)
         {
             var ellipse = new Ellipse
@@ -26,7 +22,6 @@ namespace lab_2_graphic_editor.Models.Shapes
                 Stroke = Stroke,
                 StrokeThickness = StrokeThickness,
                 Fill = WithFill ? Fill : Brushes.Transparent
-
             };
             UpdatePosition(ellipse, startPoint, endPoint);
             return ellipse;
@@ -34,13 +29,13 @@ namespace lab_2_graphic_editor.Models.Shapes
 
         public override void UpdateShape(Shape shape, Point startPoint, Point endPoint)
         {
-            if (shape is Ellipse ellipse) 
-            { 
+            if (shape is Ellipse ellipse)
+            {
                 UpdatePosition(ellipse, startPoint, endPoint);
             }
         }
 
-        public void UpdatePosition(Ellipse ellipse, Point startPoint, Point endPoint)
+        private void UpdatePosition(Ellipse ellipse, Point startPoint, Point endPoint)
         {
             double left = Math.Min(startPoint.X, endPoint.X);
             double top = Math.Min(startPoint.Y, endPoint.Y);

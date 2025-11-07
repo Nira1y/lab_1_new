@@ -2,7 +2,6 @@
 using System.Windows.Controls;
 using System.Windows.Media;
 using System.Windows.Shapes;
-using lab_2_graphic_editor.Commands;
 
 namespace lab_2_graphic_editor.Commands
 {

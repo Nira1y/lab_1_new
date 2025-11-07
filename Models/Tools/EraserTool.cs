@@ -10,7 +10,7 @@ using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using System.Windows.Shapes;
 
-namespace lab_2_graphic_editor.Tools
+namespace lab_2_graphic_editor.Models.Tools
 {
     public class EraserTool : Tool
     {
@@ -90,7 +90,6 @@ namespace lab_2_graphic_editor.Tools
             var element = FindElementAtPosition(position, canvas);
             if (element != null && !IsSpecialElement(element))
             {
-  
                 if (!_erasedElements.Contains(element))
                 {
                     _erasedElements.Add(element);
@@ -320,7 +319,7 @@ namespace lab_2_graphic_editor.Tools
             {
                 bitmap.Lock();
 
-                int radius = 10; 
+                int radius = 10;
                 int startX = Math.Max(0, centerX - radius);
                 int endX = Math.Min(bitmap.PixelWidth - 1, centerX + radius);
                 int startY = Math.Max(0, centerY - radius);
@@ -365,52 +364,6 @@ namespace lab_2_graphic_editor.Tools
             catch
             {
                 try { bitmap.Unlock(); } catch { }
-            }
-        }
-    }
-
-    public class BatchEraserCommand : Commands.ICommand
-    {
-        private readonly List<UIElement> _erasedElements;
-        private readonly BitmapEraseSession _bitmapSession;
-        private readonly Canvas _canvas;
-
-        public BatchEraserCommand(List<UIElement> erasedElements, BitmapEraseSession bitmapSession, Canvas canvas)
-        {
-            _erasedElements = new List<UIElement>(erasedElements);
-            _bitmapSession = bitmapSession;
-            _canvas = canvas;
-        }
-
-        public void Execute()
-        {
-            foreach (var element in _erasedElements)
-            {
-                if (_canvas.Children.Contains(element))
-                {
-                    _canvas.Children.Remove(element);
-                }
-            }
-
-            if (_bitmapSession != null && _bitmapSession.HasChanges)
-            {
-                _bitmapSession.ApplyFinalBitmap();
-            }
-        }
-
-        public void Undo()
-        {
-            foreach (var element in _erasedElements)
-            {
-                if (!_canvas.Children.Contains(element))
-                {
-                    _canvas.Children.Add(element);
-                }
-            }
-
-            if (_bitmapSession != null && _bitmapSession.HasChanges)
-            {
-                _bitmapSession.RestoreOriginalBitmap();
             }
         }
     }

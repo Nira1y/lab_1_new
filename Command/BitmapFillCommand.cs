@@ -1,7 +1,6 @@
 ﻿using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Media.Imaging;
-using lab_2_graphic_editor.Commands; 
 
 namespace lab_2_graphic_editor.Commands
 {

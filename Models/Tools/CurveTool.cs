@@ -1,4 +1,5 @@
-﻿using System;
+﻿using lab_2_graphic_editor.Commands;
+using System;
 using System.Collections.Generic;
 using System.Windows;
 using System.Windows.Controls;
@@ -6,7 +7,6 @@ using System.Windows.Input;
 using System.Windows.Media;
 using System.Windows.Shapes;
 using lab_2_graphic_editor.Services;
-using lab_2_graphic_editor.Commands;
 
 namespace lab_2_graphic_editor.Models.Tools
 {
@@ -32,7 +32,7 @@ namespace lab_2_graphic_editor.Models.Tools
 
         public CurveTool(ColorService colorService, CommandService commandService)
         {
-            Name = "Curve Tool";
+            Name = "Кривая";
             _colorService = colorService;
             _commandService = commandService;
 
@@ -157,7 +157,7 @@ namespace lab_2_graphic_editor.Models.Tools
             if (_curvePolyline != null && _currentCanvas.Children.Contains(_curvePolyline) && !_isCurveCompleted)
             {
                 _currentCanvas.Children.Remove(_curvePolyline);
-                _curvePolyline = null; 
+                _curvePolyline = null;
             }
 
             _nodeMarkers.Clear();

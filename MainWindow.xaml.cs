@@ -1,16 +1,12 @@
-﻿using lab_2_graphic_editor.Models;
-using lab_2_graphic_editor.Models.Texts;
-using lab_2_graphic_editor.Models.Tools;
+﻿using lab_2_graphic_editor.Models.Tools;
 using lab_2_graphic_editor.Services;
 using lab_2_graphic_editor.Tools;
-using lab_2_graphic_editor.Utilities;
 using lab_2_graphic_editor.ViewModel;
 using Microsoft.Win32;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
 using System.Windows.Media;
-using System.Windows.Shapes;
 
 namespace lab_2_graphic_editor
 {
@@ -26,7 +22,6 @@ namespace lab_2_graphic_editor
         private TextViewModel _textViewModel;
         private FillTool _fillTool;
         private CommandService _commandService;
-
 
         public MainWindow()
         {
@@ -68,11 +63,9 @@ namespace lab_2_graphic_editor
             };
             _commandService.CanExecuteChanged += (s, e) =>
             {
-                // Обновить состояние кнопок
                 CommandManager.InvalidateRequerySuggested();
             };
 
-            // Обработка горячих клавиш
             this.KeyDown += MainWindow_KeyDown;
 
             this.Loaded += (s, e) => { this.Focus(); };
@@ -108,7 +101,6 @@ namespace lab_2_graphic_editor
                 e.Handled = true;
             }
 
-            // Добавьте этот блок для завершения кривой по Enter
             if (e.Key == Key.Enter && _toolManager.CurrentTool is CurveTool curveTool)
             {
                 curveTool.FinishCurve();
@@ -151,7 +143,6 @@ namespace lab_2_graphic_editor
                     cursorToolBack.SendToBack();
                     e.Handled = true;
                 }
-                
             }
         }
 
@@ -165,6 +156,7 @@ namespace lab_2_graphic_editor
                 DrawingArea.DrawingCanvas.CaptureMouse();
             }
         }
+
         private void UndoButton_Click(object sender, RoutedEventArgs e)
         {
             _commandService.Undo();
@@ -194,8 +186,6 @@ namespace lab_2_graphic_editor
         {
             _statusVM.Coordinates = "X: -, Y: -";
         }
-
-        #region Инструменты
 
         private void SelectCursor_Click(object sender, RoutedEventArgs e)
         {
@@ -259,6 +249,7 @@ namespace lab_2_graphic_editor
             _toolManager.CurrentTool = new TriangleTool(_colorService, _commandService, true);
             _statusVM.CurrentTool = "Инструмент: Треугольник (с заливкой)";
         }
+
         private void SelectText_Click(object sender, RoutedEventArgs e)
         {
             _cursorTool?.ClearSelection();
@@ -274,21 +265,20 @@ namespace lab_2_graphic_editor
             _toolManager.CurrentTool = new EraserTool(_commandService);
             _statusVM.CurrentTool = "Инструмент: Ластик";
         }
+
         private void SelectFill_Click(object sender, RoutedEventArgs e)
         {
             _cursorTool?.ClearSelection();
             _toolManager.CurrentTool = _fillTool;
             _statusVM.CurrentTool = "Инструмент: Заливка";
         }
+
         private void SelectCurve_Click(object sender, RoutedEventArgs e)
         {
             _cursorTool?.ClearSelection();
             _toolManager.CurrentTool = new CurveTool(_colorService, _commandService);
             _statusVM.CurrentTool = "Инструмент: Кривая";
         }
-        #endregion
-
-        #region Обработчики текста
 
         private void OnTextPropertiesChanged()
         {
@@ -314,10 +304,6 @@ namespace lab_2_graphic_editor
                 _textTool.UpdateTextColor(color);
             }
         }
-
-        #endregion
-
-        #region Файловые операции
 
         private void NewProject_Click(object sender, RoutedEventArgs e)
         {
@@ -433,9 +419,6 @@ namespace lab_2_graphic_editor
             }
         }
 
-        #endregion
-        #region Z-Order
-
         private void BringToFront_Click(object sender, RoutedEventArgs e)
         {
             if (_toolManager.CurrentTool is CursorTool cursorTool)
@@ -451,8 +434,5 @@ namespace lab_2_graphic_editor
                 cursorTool.SendToBack();
             }
         }
-
-        #endregion
-
     }
 }

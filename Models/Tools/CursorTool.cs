@@ -1,4 +1,5 @@
 ﻿using lab_2_graphic_editor.Models.Texts;
+using lab_2_graphic_editor.Models;
 using lab_2_graphic_editor.Models.Tools;
 using lab_2_graphic_editor.Commands;
 using lab_2_graphic_editor.Services;
@@ -19,27 +20,27 @@ namespace lab_2_graphic_editor.Tools
         private bool _isResizing = false;
         private bool _isRotating = false;
         private UIElement _selectedElement;
-        private readonly ColorService _colorService;
         private Point _elementStartPosition;
         private bool _isAlreadySelected = false;
         private ResizeService.ResizeHandle _activeResizeHandle;
         private RotateHandle _rotateHandle;
         private List<UIElement> _selectionGroup = new List<UIElement>();
         private Canvas _currentCanvas;
+
+        // Сервисы
         private readonly CommandService _commandService;
         private readonly SelectionService _selectionService;
         private readonly ResizeService _resizeService;
         private readonly RotationService _rotationService;
         private readonly HandleService _handleService;
         private readonly ZOrderService _zOrderService;
+        private readonly ElementMovementService _movementService;
+        private readonly TextEditingService _textEditingService;
+        private readonly ColorChangeService _colorChangeService;
+        private readonly ElementPropertiesService _propertiesService;
 
         // Для отслеживания изменений
-        private Point _originalPosition;
-        private double _originalRotation;
-        private Brush _originalStroke;
-        private Brush _originalFill;
-        private Brush _originalForeground;
-        private Size _originalSize;
+        private ElementPropertiesService.ElementProperties _originalProperties;
 
         private static UIElement _currentlySelectedElement;
         private static CursorTool _currentInstance;
@@ -48,7 +49,6 @@ namespace lab_2_graphic_editor.Tools
         public CursorTool(ColorService colorService, CommandService commandService)
         {
             Name = "Курсор";
-            _colorService = colorService;
             _currentInstance = this;
             _commandService = commandService;
             _selectionService = new SelectionService();
@@ -56,6 +56,10 @@ namespace lab_2_graphic_editor.Tools
             _rotationService = new RotationService();
             _handleService = new HandleService();
             _zOrderService = new ZOrderService();
+            _movementService = new ElementMovementService();
+            _textEditingService = new TextEditingService();
+            _colorChangeService = new ColorChangeService(commandService, _selectionService);
+            _propertiesService = new ElementPropertiesService();
         }
 
         public UIElement SelectedElement => _selectedElement;
@@ -113,7 +117,7 @@ namespace lab_2_graphic_editor.Tools
             _isDragging = true;
             _startPoint = position;
             _selectedElement = clickedElement;
-            _elementStartPosition = GetElementPosition(_selectedElement);
+            _elementStartPosition = _movementService.GetElementPosition(_selectedElement);
 
             // Сохраняем исходные свойства перед перемещением
             SaveOriginalProperties();
@@ -129,7 +133,7 @@ namespace lab_2_graphic_editor.Tools
 
             if (_selectedElement is TextBox textBox)
             {
-                MakeTextBoxNonEditable(textBox);
+                _textEditingService.MakeTextBoxNonEditable(textBox);
             }
 
             _handleService.CreateResizeHandles(_currentCanvas, _selectedElement);
@@ -149,7 +153,7 @@ namespace lab_2_graphic_editor.Tools
                     Point center = _rotationService.GetElementCenter(_selectedElement);
 
                     Point mouseDelta = new Point(position.X - _startPoint.X, position.Y - _startPoint.Y);
-                    Point rotatedDelta = RotatePoint(mouseDelta, -rotateTransform.Angle);
+                    Point rotatedDelta = _movementService.RotatePoint(mouseDelta, -rotateTransform.Angle);
 
                     deltaX = rotatedDelta.X;
                     deltaY = rotatedDelta.Y;
@@ -163,7 +167,7 @@ namespace lab_2_graphic_editor.Tools
                 double newX = _elementStartPosition.X + deltaX;
                 double newY = _elementStartPosition.Y + deltaY;
 
-                MoveElementToPosition(_selectedElement, newX, newY);
+                _movementService.MoveElementToPosition(_selectedElement, newX, newY);
                 UpdateHandlesPosition(canvas);
             }
             else if (_isResizing && _selectedElement != null)
@@ -186,27 +190,26 @@ namespace lab_2_graphic_editor.Tools
             // Регистрируем команды после завершения действий
             if (_isDragging && _selectedElement != null)
             {
-                Point newPosition = GetElementPosition(_selectedElement);
-                if (_originalPosition != newPosition)
+                Point newPosition = _movementService.GetElementPosition(_selectedElement);
+                if (_originalProperties.OriginalPosition != newPosition)
                 {
-                    _commandService.ExecuteModifyPosition(_selectedElement, _originalPosition, newPosition);
+                    _commandService.ExecuteModifyPosition(_selectedElement, _originalProperties.OriginalPosition, newPosition);
                 }
             }
             else if (_isResizing && _selectedElement != null)
             {
-                Size newSize = GetElementSize(_selectedElement);
-                if (_originalSize != newSize)
+                Size newSize = _propertiesService.GetElementSize(_selectedElement);
+                if (_originalProperties.OriginalSize != newSize)
                 {
-                    _commandService.ExecuteModifySize(_selectedElement, _originalSize, newSize);
+                    _commandService.ExecuteModifySize(_selectedElement, _originalProperties.OriginalSize, newSize);
                 }
             }
             else if (_isRotating && _selectedElement != null)
             {
-                double newRotation = GetElementRotation(_selectedElement);
-                if (Math.Abs(_originalRotation - newRotation) > 0.1)
+                double newRotation = _propertiesService.GetElementRotation(_selectedElement);
+                if (Math.Abs(_originalProperties.OriginalRotation - newRotation) > 0.1)
                 {
-                    // Для поворота используем команду модификации с кастомными параметрами
-                    var rotationCommand = new ModifyRotationCommand(_selectedElement, _originalRotation, newRotation);
+                    var rotationCommand = new ModifyRotationCommand(_selectedElement, _originalProperties.OriginalRotation, newRotation);
                     _commandService.CommandManager.Execute(rotationCommand);
                 }
             }
@@ -221,171 +224,11 @@ namespace lab_2_graphic_editor.Tools
         {
             if (_selectedElement != null)
             {
-                _originalPosition = GetElementPosition(_selectedElement);
-                _originalRotation = GetElementRotation(_selectedElement);
-                _originalSize = GetElementSize(_selectedElement);
-
-                if (_selectedElement is Shape shape)
-                {
-                    _originalStroke = shape.Stroke;
-                    _originalFill = shape.Fill;
-                }
-                else if (_selectedElement is TextBox textBox)
-                {
-                    _originalForeground = textBox.Foreground;
-                }
-            }
-        }
-
-        private double GetElementRotation(UIElement element)
-        {
-            if (element.RenderTransform is RotateTransform rotateTransform)
-            {
-                return rotateTransform.Angle;
-            }
-            return 0;
-        }
-
-        private Size GetElementSize(UIElement element)
-        {
-            if (element is FrameworkElement frameworkElement)
-            {
-                return new Size(frameworkElement.ActualWidth, frameworkElement.ActualHeight);
-            }
-            return new Size(0, 0);
-        }
-
-        private Point RotatePoint(Point point, double angle)
-        {
-            double angleRad = angle * Math.PI / 180.0;
-            double cos = Math.Cos(angleRad);
-            double sin = Math.Sin(angleRad);
-
-            return new Point(
-                point.X * cos - point.Y * sin,
-                point.X * sin + point.Y * cos
-            );
-        }
-
-        private void MoveElementToPosition(UIElement element, double newX, double newY)
-        {
-            if (element is Line line)
-            {
-                double deltaX = newX - line.X1;
-                double deltaY = newY - line.Y1;
-
-                line.X1 = newX;
-                line.Y1 = newY;
-                line.X2 += deltaX;
-                line.Y2 += deltaY;
-            }
-            else if (element is Polygon polygon)
-            {
-                Point currentCenter = GetPolygonCenter(polygon);
-                double deltaX = newX - currentCenter.X;
-                double deltaY = newY - currentCenter.Y;
-
-                PointCollection newPoints = new PointCollection();
-                foreach (Point point in polygon.Points)
-                {
-                    newPoints.Add(new Point(point.X + deltaX, point.Y + deltaY));
-                }
-                polygon.Points = newPoints;
-            }
-            else if (element is Polyline polyline)
-            {
-                Point currentCenter = GetPolylineCenter(polyline);
-                double deltaX = newX - currentCenter.X;
-                double deltaY = newY - currentCenter.Y;
-
-                PointCollection newPoints = new PointCollection();
-                foreach (Point point in polyline.Points)
-                {
-                    newPoints.Add(new Point(point.X + deltaX, point.Y + deltaY));
-                }
-                polyline.Points = newPoints;
-            }
-            else if (element is TextBox textBox)
-            {
-                Canvas.SetLeft(textBox, newX);
-                Canvas.SetTop(textBox, newY);
-            }
-            else
-            {
-                Canvas.SetLeft(element, newX);
-                Canvas.SetTop(element, newY);
+                _originalProperties = _propertiesService.SaveOriginalProperties(_selectedElement);
             }
         }
 
         #region Basic Selection and Movement
-
-        private Point GetElementPosition(UIElement element)
-        {
-            if (element is Line line)
-            {
-                return new Point(line.X1, line.Y1);
-            }
-            else if (element is Polygon polygon)
-            {
-                return GetPolygonCenter(polygon);
-            }
-            else if (element is Polyline polyline)
-            {
-                return GetPolylineCenter(polyline);
-            }
-            else if (element is TextBox textBox)
-            {
-                return new Point(Canvas.GetLeft(textBox), Canvas.GetTop(textBox));
-            }
-            else
-            {
-                double left = Canvas.GetLeft(element);
-                double top = Canvas.GetTop(element);
-                return new Point(
-                    double.IsNaN(left) ? 0 : left,
-                    double.IsNaN(top) ? 0 : top
-                );
-            }
-        }
-
-        private Point GetPolygonCenter(Polygon polygon)
-        {
-            if (polygon.Points.Count == 0) return new Point(0, 0);
-
-            double sumX = 0;
-            double sumY = 0;
-
-            foreach (Point point in polygon.Points)
-            {
-                sumX += point.X;
-                sumY += point.Y;
-            }
-
-            return new Point(sumX / polygon.Points.Count, sumY / polygon.Points.Count);
-        }
-
-        private Point GetPolylineCenter(Polyline polyline)
-        {
-            if (polyline.Points.Count == 0) return new Point(0, 0);
-
-            double sumX = 0;
-            double sumY = 0;
-
-            foreach (Point point in polyline.Points)
-            {
-                sumX += point.X;
-                sumY += point.Y;
-            }
-
-            return new Point(sumX / polyline.Points.Count, sumY / polyline.Points.Count);
-        }
-
-        private void MakeTextBoxNonEditable(TextBox textBox)
-        {
-            textBox.IsHitTestVisible = false;
-            textBox.Focusable = false;
-            textBox.Cursor = Cursors.SizeAll;
-        }
 
         private void ClearSelectionFromPrevious()
         {
@@ -428,71 +271,25 @@ namespace lab_2_graphic_editor.Tools
 
         public void ChangeStrokeColor(Color color)
         {
-            if (_selectedElement != null && _selectedElement is Shape shape)
-            {
-                var newBrush = new SolidColorBrush(color);
-                _commandService.ExecuteModifyStroke(_selectedElement, shape.Stroke, newBrush);
-                _selectionService.UpdateStrokeColor(_selectedElement, color);
-            }
+            _colorChangeService.ChangeStrokeColor(_selectedElement, color);
         }
 
         public void ChangeFillColor(Color color)
         {
-            if (_selectedElement != null && _selectedElement is Shape shape)
-            {
-                var newBrush = new SolidColorBrush(color);
-                _commandService.ExecuteModifyFill(_selectedElement, shape.Fill, newBrush);
-                _selectionService.UpdateFillColor(_selectedElement, color);
-            }     
+            _colorChangeService.ChangeFillColor(_selectedElement, color);
         }
 
         public void ChangeTextColor(Color color)
         {
-            if (_selectedElement is TextBox textBox)
-            {
-                var newBrush = new SolidColorBrush(color);
-                _commandService.ExecuteModifyForeground(_selectedElement, textBox.Foreground, newBrush);
-                textBox.Foreground = newBrush;
-            }
+            _colorChangeService.ChangeTextColor(_selectedElement, color);
         }
 
         public void ChangeStrokeOrTextColor(Color color)
         {
-            if (_selectedElement != null)
-            {
-                if (_selectedElement is TextBox textBox)
-                {
-                    var newBrush = new SolidColorBrush(color);
-                    _commandService.ExecuteModifyForeground(_selectedElement, textBox.Foreground, newBrush);
-                    textBox.Foreground = newBrush;
-                }
-                else if (_selectedElement is Shape shape)
-                {
-                    var newBrush = new SolidColorBrush(color);
-                    _commandService.ExecuteModifyStroke(_selectedElement, shape.Stroke, newBrush);
-                    shape.Stroke = newBrush;
-                }
-            }
-
-            foreach (var element in _selectionGroup)
-            {
-                if (element is TextBox textBox)
-                {
-                    var newBrush = new SolidColorBrush(color);
-                    _commandService.ExecuteModifyForeground(element, textBox.Foreground, newBrush);
-                    textBox.Foreground = newBrush;
-                }
-                else if (element is Shape shape)
-                {
-                    var newBrush = new SolidColorBrush(color);
-                    _commandService.ExecuteModifyStroke(element, shape.Stroke, newBrush);
-                    shape.Stroke = newBrush;
-                }
-            }
+            _colorChangeService.ChangeStrokeOrTextColor(_selectedElement, _selectionGroup, color);
         }
 
         #endregion
-
 
         #region Rotation Handles
 
@@ -605,23 +402,21 @@ namespace lab_2_graphic_editor.Tools
         {
             if (_selectedElement is TextBox textBox)
             {
-                textBox.FontFamily = new FontFamily(fontFamily);
-                textBox.FontSize = fontSize;
-                textBox.FontWeight = fontWeight;
-                textBox.FontStyle = fontStyle;
+                _textEditingService.ChangeTextFont(textBox, fontFamily, fontSize, fontWeight, fontStyle);
             }
         }
 
         public void SetTextTool(TextTool textTool)
         {
             _textTool = textTool;
+            _textEditingService.SetTextTool(textTool);
         }
 
         public void StartTextEditing()
         {
             if (_selectedElement is TextBox textBox)
             {
-                _textTool?.StartTextEditing(textBox);
+                _textEditingService.StartTextEditing(textBox);
             }
         }
 
@@ -629,76 +424,11 @@ namespace lab_2_graphic_editor.Tools
         {
             if (_selectedElement is TextBox textBox)
             {
-                MakeTextBoxNonEditable(textBox);
-                textBox.Background = Brushes.Transparent;
-                textBox.BorderBrush = Brushes.Blue;
-
-                textBox.LostFocus -= TextBox_LostFocus;
-                textBox.PreviewKeyDown -= TextBox_PreviewKeyDown;
-            }
-        }
-
-        private void TextBox_LostFocus(object sender, RoutedEventArgs e)
-        {
-            if (sender is TextBox textBox)
-            {
-                FinishTextEditing();
-            }
-        }
-
-        private void TextBox_PreviewKeyDown(object sender, KeyEventArgs e)
-        {
-            if (sender is TextBox textBox)
-            {
-                if (e.Key == Key.Escape || (e.Key == Key.Enter && Keyboard.Modifiers != ModifierKeys.Shift))
-                {
-                    FinishTextEditing();
-                    e.Handled = true;
-                }
+                _textEditingService.FinishTextEditing(textBox);
             }
         }
 
         #endregion
 
-        private class RotateHandle
-        {
-            public Point Position { get; set; }
-            public Shape Visual { get; set; }
-        }
-    }
-    public class ModifyRotationCommand : Commands.ICommand
-    {
-        private readonly UIElement _element;
-        private readonly double _oldAngle;
-        private readonly double _newAngle;
-
-        public ModifyRotationCommand(UIElement element, double oldAngle, double newAngle)
-        {
-            _element = element;
-            _oldAngle = oldAngle;
-            _newAngle = newAngle;
-        }
-
-        public void Execute()
-        {
-            SetRotation(_newAngle);
-        }
-
-        public void Undo()
-        {
-            SetRotation(_oldAngle);
-        }
-
-        private void SetRotation(double angle)
-        {
-            if (_element.RenderTransform is RotateTransform rotateTransform)
-            {
-                rotateTransform.Angle = angle;
-            }
-            else
-            {
-                _element.RenderTransform = new RotateTransform(angle);
-            }
-        }
     }
 }

@@ -5,6 +5,7 @@ using System.Windows.Input;
 using System.Windows.Media;
 using lab_2_graphic_editor.Utilities;
 using lab_2_graphic_editor.Models.Texts;
+using lab_2_graphic_editor.Models.Tools;
 
 namespace lab_2_graphic_editor.ViewModel
 {

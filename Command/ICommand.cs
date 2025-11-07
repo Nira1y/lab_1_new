@@ -1,6 +1,4 @@
-﻿using System;
-
-namespace lab_2_graphic_editor.Commands
+﻿namespace lab_2_graphic_editor.Commands
 {
     public interface ICommand
     {

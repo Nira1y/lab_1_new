@@ -1,4 +1,4 @@
-﻿using lab_2_graphic_editor.Models;
+﻿using lab_2_graphic_editor.Models.Texts;
 using lab_2_graphic_editor.Models.Tools;
 using lab_2_graphic_editor.Services;
 using lab_2_graphic_editor.ViewModel;
@@ -7,7 +7,7 @@ using System.Windows.Controls;
 using System.Windows.Input;
 using System.Windows.Media;
 
-namespace lab_2_graphic_editor.Models.Texts
+namespace lab_2_graphic_editor.Models.Tools
 {
     public class TextTool : Tool
     {
@@ -120,6 +120,7 @@ namespace lab_2_graphic_editor.Models.Texts
                 _currentTextBox = null;
             }
         }
+
         public void StartTextEditing(TextBox textBox)
         {
             if (textBox != null)

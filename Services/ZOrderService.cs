@@ -7,14 +7,24 @@ namespace lab_2_graphic_editor.Services
     {
         public void BringToFront(Canvas canvas, UIElement element)
         {
+            if (canvas == null || element == null) return;
+
             int maxZIndex = GetMaxZIndex(canvas);
             Panel.SetZIndex(element, maxZIndex + 1);
         }
 
         public void SendToBack(Canvas canvas, UIElement element)
         {
-            int minZIndex = GetMinZIndex(canvas);
-            Panel.SetZIndex(element, minZIndex - 1);
+            if (canvas == null || element == null) return;
+
+            Panel.SetZIndex(element, 0);
+            foreach (UIElement child in canvas.Children)
+            {
+                if (child != element && Panel.GetZIndex(child) >= 0)
+                {
+                    Panel.SetZIndex(child, Panel.GetZIndex(child) + 1);
+                }
+            }
         }
 
         private int GetMaxZIndex(Canvas canvas)
@@ -26,17 +36,6 @@ namespace lab_2_graphic_editor.Services
                 if (zIndex > maxZ) maxZ = zIndex;
             }
             return maxZ;
-        }
-
-        private int GetMinZIndex(Canvas canvas)
-        {
-            int minZ = 0;
-            foreach (UIElement child in canvas.Children)
-            {
-                int zIndex = Panel.GetZIndex(child);
-                if (zIndex < minZ) minZ = zIndex;
-            }
-            return minZ;
         }
     }
 }

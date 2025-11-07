@@ -21,7 +21,7 @@ namespace lab_2_graphic_editor.Models.Texts
             set
             {
                 _text = value;
-                TextChanged?.Invoke(value); 
+                TextChanged?.Invoke(value);
             }
         }
 
@@ -94,9 +94,7 @@ namespace lab_2_graphic_editor.Models.Texts
                 MinWidth = 50,
                 TextWrapping = TextWrapping.Wrap,
                 AcceptsReturn = true,
-                VerticalScrollBarVisibility = ScrollBarVisibility.Auto,
-                IsHitTestVisible = true,
-                IsReadOnly = false 
+                VerticalScrollBarVisibility = ScrollBarVisibility.Auto
             };
         }
 
