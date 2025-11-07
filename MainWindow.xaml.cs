@@ -24,6 +24,7 @@ namespace lab_2_graphic_editor
         private string _currentProjectPath;
         private TextTool _textTool;
         private TextViewModel _textViewModel;
+        private FillTool _fillTool;
 
         public MainWindow()
         {
@@ -37,6 +38,7 @@ namespace lab_2_graphic_editor
             _toolManager = new ToolManager();
             _cursorTool = new CursorTool(_colorService);
             _toolManager.CurrentTool = new BrushTool(_colorService);
+            _fillTool = new FillTool(_colorService);
             _fileService = new FileService();
 
             _textViewModel = new TextViewModel();
@@ -95,6 +97,13 @@ namespace lab_2_graphic_editor
             if (e.Key == Key.Delete && _toolManager.CurrentTool is CursorTool cursorTool)
             {
                 cursorTool.DeleteSelectedShape();
+                e.Handled = true;
+            }
+
+            // Добавьте этот блок для завершения кривой по Enter
+            if (e.Key == Key.Enter && _toolManager.CurrentTool is CurveTool curveTool)
+            {
+                curveTool.FinishCurve();
                 e.Handled = true;
             }
 
@@ -249,6 +258,18 @@ namespace lab_2_graphic_editor
             _cursorTool?.ClearSelection();
             _toolManager.CurrentTool = new EraserTool();
             _statusVM.CurrentTool = "Инструмент: Ластик";
+        }
+        private void SelectFill_Click(object sender, RoutedEventArgs e)
+        {
+            _cursorTool?.ClearSelection();
+            _toolManager.CurrentTool = _fillTool;
+            _statusVM.CurrentTool = "Инструмент: Заливка";
+        }
+        private void SelectCurve_Click(object sender, RoutedEventArgs e)
+        {
+            _cursorTool?.ClearSelection();
+            _toolManager.CurrentTool = new CurveTool();
+            _statusVM.CurrentTool = "Инструмент: Кривая";
         }
         #endregion
 

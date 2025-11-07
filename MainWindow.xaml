@@ -40,6 +40,7 @@
                 <MenuItem Header="Эллипс (с заливкой)" Click="SelectEllipseFill_Click"/>
                 <MenuItem Header="Треугольник" Click="SelectTriangle_Click"/>
                 <MenuItem Header="Треугольник(с заливкой)" Click="SelectTriangleFill_Click"/>
+                <MenuItem Header="Кривая" Click="SelectCurve_Click"/>
                 <MenuItem Header="Текст" Click="SelectText_Click"/>
                 <MenuItem Header="Ластик" Click="SelectEraser_Click"/>
             </MenuItem>
@@ -59,6 +60,8 @@
             <Button Content="Курсор" Click="SelectCursor_Click" ToolTip="Выделение и перемещение" Padding="10,5"/>
             <Button Content="Кисть" Click = "SelectBrush_Click" ToolTip="Кисть для рисования" Padding="10,5"/>
             <Button Content="Ластик" Click="SelectEraser_Click" ToolTip="Удаление фигур" Padding="10,5"/>
+            <Button x:Name="SelectFill" Content="Заливка" Click="SelectFill_Click" 
+                ToolTip="Заливка области" Width="60" Height="30" Margin="2"/>
             <Separator/>
 
             <TextBlock Text="Цвет: " VerticalAlignment="Center" Margin="5,0,0,0"/>
