@@ -8,7 +8,7 @@ namespace lab_2_graphic_editor.Tools
 {
     public class TriangleTool : ShapeTool
     {
-        public TriangleTool(ColorService colorService, bool filled = false) : base(colorService)
+        public TriangleTool(ColorService colorService, CommandService commandService, bool filled = false) : base(colorService, commandService)
         {
             Name = filled ? "Прямоугольник (с заливкой)" : "Прямоугольник";
             shapeModel = new TriangleShape(colorService, filled);

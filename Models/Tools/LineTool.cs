@@ -8,10 +8,9 @@ namespace lab_2_graphic_editor.Tools
 {
     public class LineTool : ShapeTool
     {
-        public LineTool(ColorService colorService) : base(colorService)
+        public LineTool(ColorService colorService, CommandService commandService) : base(colorService, commandService)
         {
             Name = "Линия";
-            IconPath = "/Resources/line_icon.png";
             shapeModel = new LineShape(colorService);
         }
     }

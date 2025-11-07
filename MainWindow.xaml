@@ -58,6 +58,14 @@
             <Button Content="Ластик" Click="SelectEraser_Click" ToolTip="Удаление фигур" Padding="10,5"/>
             <Button x:Name="SelectFill" Content="Заливка" Click="SelectFill_Click" 
                 ToolTip="Заливка области" Width="60" Height="30" Margin="2"/>
+            <Button x:Name="UndoButton" Content="Undo (Ctrl+Z)" 
+            Click="UndoButton_Click" 
+            IsEnabled="{Binding CommandService.CanUndo, RelativeSource={RelativeSource AncestorType=Window}}"
+            Margin="5"/>
+            <Button x:Name="RedoButton" Content="Redo (Ctrl+Y)" 
+            Click="RedoButton_Click"
+            IsEnabled="{Binding CommandService.CanRedo, RelativeSource={RelativeSource AncestorType=Window}}"
+            Margin="5"/>
             <Separator/>
 
             <TextBlock Text="Цвет: " VerticalAlignment="Center" Margin="5,0,0,0"/>

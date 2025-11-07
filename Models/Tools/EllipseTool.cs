@@ -8,7 +8,7 @@ namespace lab_2_graphic_editor.Tools
 {
     public class EllipseTool : ShapeTool
     {
-        public EllipseTool(ColorService colorService, bool filled = false) : base(colorService)
+        public EllipseTool(ColorService colorService, CommandService commandService, bool filled = false) : base(colorService, commandService)
         {
             Name = filled ? "Прямоугольник (с заливкой)" : "Прямоугольник";
             shapeModel = new EllipseShape(colorService, filled);

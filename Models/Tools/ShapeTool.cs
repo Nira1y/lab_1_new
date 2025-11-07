@@ -13,10 +13,11 @@ namespace lab_2_graphic_editor.Tools
         protected Shape currentShape;
         protected bool isDrawing = false;
         protected ShapeBase shapeModel;
+        protected readonly CommandService _commandService;
 
-        protected ShapeTool(ColorService colorService)
+        protected ShapeTool(ColorService colorService, CommandService commandService)
         {
-            // ColorService передается в конкретные ShapeTool через конструкторы наследников
+            _commandService = commandService;
         }
 
         public override void OnMouseDown(Point position, Canvas canvas)
@@ -25,7 +26,7 @@ namespace lab_2_graphic_editor.Tools
             startPoint = position;
 
             currentShape = shapeModel.CreateShape(startPoint, position);
-            canvas.Children.Add(currentShape);
+            _commandService.ExecuteAddElement(currentShape, canvas);
         }
 
         public override void OnMouseMove(Point position, Canvas canvas)

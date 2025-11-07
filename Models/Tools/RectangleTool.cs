@@ -8,7 +8,7 @@ namespace lab_2_graphic_editor.Tools
 {
     public class RectangleTool : ShapeTool
     {
-        public RectangleTool(ColorService colorService, bool filled = false) : base(colorService)
+        public RectangleTool(ColorService colorService, CommandService commandService, bool filled = false) : base(colorService, commandService)
         {
             Name = filled ? "Прямоугольник (с заливкой)" : "Прямоугольник";
             shapeModel = new RectangleShape(colorService, filled);

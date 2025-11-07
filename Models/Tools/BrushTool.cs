@@ -1,9 +1,11 @@
-﻿using System.Windows;
+﻿using lab_2_graphic_editor.Commands;
+using lab_2_graphic_editor.Models.Tools;
+using lab_2_graphic_editor.Services;
+using System.Collections.Generic;
+using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Media;
 using System.Windows.Shapes;
-using lab_2_graphic_editor.Models.Tools;
-using lab_2_graphic_editor.Services;
 
 namespace lab_2_graphic_editor.Tools
 {
@@ -13,18 +15,21 @@ namespace lab_2_graphic_editor.Tools
         private bool isDrawing = false;
         private double brushSize = 3;
         private readonly ColorService _colorService;
+        private readonly CommandService _commandService;
+        private List<UIElement> _currentStrokeElements = new List<UIElement>();
 
-        public BrushTool(ColorService colorService)
+        public BrushTool(ColorService colorService, CommandService commandService)
         {
             Name = "Кисть";
-            IconPath = "/Resources/brush_icon.png";
             _colorService = colorService;
+            _commandService = commandService;
         }
 
         public override void OnMouseDown(Point position, Canvas canvas)
         {
             isDrawing = true;
             previousPoint = position;
+            _currentStrokeElements.Clear();
             DrawDot(position, canvas);
         }
 
@@ -32,17 +37,29 @@ namespace lab_2_graphic_editor.Tools
         {
             if (isDrawing)
             {
-                DrawLine(previousPoint, position, canvas);
+                var line = DrawLine(previousPoint, position, canvas);
+                _currentStrokeElements.Add(line);
                 previousPoint = position;
             }
         }
 
         public override void OnMouseUp(Point position, Canvas canvas)
         {
+            if (isDrawing && _currentStrokeElements.Count > 0)
+            {
+                var commands = new List<ICommand>();
+                foreach (var element in _currentStrokeElements)
+                {
+                    commands.Add(new AddElementCommand(element, canvas));
+                }
+                _commandService.ExecuteBatchCommand(commands);
+            }
+
             isDrawing = false;
+            _currentStrokeElements.Clear();
         }
 
-        private void DrawLine(Point start, Point end, Canvas canvas)
+        private Line DrawLine(Point start, Point end, Canvas canvas)
         {
             Line line = new Line
             {
@@ -58,6 +75,7 @@ namespace lab_2_graphic_editor.Tools
             };
 
             canvas.Children.Add(line);
+            return line;
         }
 
         private void DrawDot(Point point, Canvas canvas)
@@ -73,6 +91,7 @@ namespace lab_2_graphic_editor.Tools
             Canvas.SetLeft(dot, point.X - brushSize / 2);
             Canvas.SetTop(dot, point.Y - brushSize / 2);
             canvas.Children.Add(dot);
+            _currentStrokeElements.Add(dot);
         }
 
         public void SetBrushSize(double size)

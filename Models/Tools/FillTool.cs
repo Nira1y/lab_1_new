@@ -1,25 +1,29 @@
-﻿using System;
+﻿using lab_2_graphic_editor.Commands; 
+using lab_2_graphic_editor.Models.Tools;
+using lab_2_graphic_editor.Services;
+using System;
+using System.Collections.Generic;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using System.Windows.Shapes;
-using System.Collections.Generic;
-using lab_2_graphic_editor.Models.Tools;
-using lab_2_graphic_editor.Services;
 
 namespace lab_2_graphic_editor.Tools
 {
     public class FillTool : Tool
     {
         private readonly ColorService _colorService;
+        private readonly CommandService _commandService;
         private Rectangle _canvasBackground;
+        private CommandManager _commandManager;
         private const int ColorTolerance = 50;
 
-        public FillTool(ColorService colorService)
+        public FillTool(ColorService colorService, CommandService commandService)
         {
             Name = "Заливка";
             _colorService = colorService;
+            _commandService = commandService;
         }
 
         public override void OnMouseDown(Point position, Canvas canvas)
@@ -33,22 +37,69 @@ namespace lab_2_graphic_editor.Tools
                 ApplyFillToElement(elementUnderCursor);
                 return;
             }
-
-            BitmapSource bitmap = RenderCanvasToBitmap(canvas);
-            if (bitmap == null) return;
-
-            Color targetColor = GetPixelColor(bitmap, position);
-            Color baseFillColor = (_colorService.CurrentColor as SolidColorBrush)?.Color ?? Colors.Black;
-
-            WriteableBitmap writable = new WriteableBitmap(bitmap);
-            if (writable == null) return;
-
-            FloodFill(writable, (int)position.X, (int)position.Y, targetColor, baseFillColor);
-            ApplyBitmapToCanvas(writable, canvas);
+            ApplyBitmapFill(position, canvas);
         }
 
         public override void OnMouseMove(Point position, Canvas canvas) { }
         public override void OnMouseUp(Point position, Canvas canvas) { }
+
+        private void ApplyFillToElement(UIElement element)
+        {
+            var fillColor = _colorService.CurrentColor;
+
+            switch (element)
+            {
+                case Rectangle rectangle:
+                    var oldRectFill = rectangle.Fill;
+                    rectangle.Fill = fillColor;
+                    _commandService.ExecuteModifyFill(element, oldRectFill, fillColor);
+                    break;
+
+                case Ellipse ellipse:
+                    var oldEllipseFill = ellipse.Fill;
+                    ellipse.Fill = fillColor;
+                    _commandService.ExecuteModifyFill(element, oldEllipseFill, fillColor);
+                    break;
+
+                case Polygon polygon:
+                    var oldPolygonFill = polygon.Fill;
+                    polygon.Fill = fillColor;
+                    _commandService.ExecuteModifyFill(element, oldPolygonFill, fillColor);
+                    break;
+
+                case Line line:
+                    var oldLineStroke = line.Stroke;
+                    line.Stroke = fillColor;
+                    _commandService.ExecuteModifyStroke(element, oldLineStroke, fillColor);
+                    break;
+
+                case TextBox textBox:
+                    var oldTextBoxBackground = textBox.Background;
+                    textBox.Background = fillColor;
+                    _commandService.ExecuteModifyFill(element, oldTextBoxBackground, fillColor);
+                    break;
+
+                case Path path:
+                    var oldPathFill = path.Fill;
+                    path.Fill = fillColor;
+                    _commandService.ExecuteModifyFill(element, oldPathFill, fillColor);
+                    break;
+            }
+        }
+
+        private void ApplyBitmapFill(Point position, Canvas canvas)
+        {
+
+            BitmapSource originalBitmap = RenderCanvasToBitmap(canvas);
+
+            Color targetColor = GetPixelColor(originalBitmap, position);
+            Color baseFillColor = (_colorService.CurrentColor as SolidColorBrush)?.Color ?? Colors.Black;
+            WriteableBitmap filledBitmap = new WriteableBitmap(originalBitmap);
+            FloodFill(filledBitmap, (int)position.X, (int)position.Y, targetColor, baseFillColor);
+
+            var fillCommand = new BitmapFillCommand(canvas, originalBitmap, filledBitmap, position);
+            _commandService.CommandManager.Execute(fillCommand);
+        }
 
         private BitmapSource RenderCanvasToBitmap(Canvas canvas)
         {
@@ -139,10 +190,10 @@ namespace lab_2_graphic_editor.Tools
                     int stride = bmp.BackBufferStride;
                     int index = y * stride + x * 4;
 
-                    buffer[index] = color.B;     
+                    buffer[index] = color.B;
                     buffer[index + 1] = color.G;
-                    buffer[index + 2] = color.R; 
-                    buffer[index + 3] = color.A; 
+                    buffer[index + 2] = color.R;
+                    buffer[index + 3] = color.A;
                 }
                 bmp.AddDirtyRect(new Int32Rect(x, y, 1, 1));
                 bmp.Unlock();
@@ -270,73 +321,68 @@ namespace lab_2_graphic_editor.Tools
         {
             return element is Shape || element is TextBox;
         }
+    }
 
-        private void ApplyFillToElement(UIElement element)
+    public class BitmapFillCommand : ICommand
+    {
+        private readonly Canvas _canvas;
+        private readonly BitmapSource _originalBitmap;
+        private readonly BitmapSource _filledBitmap;
+        private readonly Point _fillPosition;
+        private Image _currentImage;
+
+        public BitmapFillCommand(Canvas canvas, BitmapSource originalBitmap, BitmapSource filledBitmap, Point fillPosition)
         {
-            var fillColor = _colorService.CurrentColor;
-
-            switch (element)
-            {
-                case Rectangle rectangle:
-                    rectangle.Fill = fillColor;
-                    break;
-                case Ellipse ellipse:
-                    ellipse.Fill = fillColor;
-                    break;
-                case Polygon polygon:
-                    polygon.Fill = fillColor;
-                    break;
-                case Line line:
-                    line.Stroke = fillColor;
-                    break;
-                case TextBox textBox:
-                    textBox.Background = fillColor;
-                    break;
-                case Path path:
-                    path.Fill = fillColor;
-                    break;
-            }
+            _canvas = canvas;
+            _originalBitmap = originalBitmap;
+            _filledBitmap = filledBitmap;
+            _fillPosition = fillPosition;
         }
 
-        private void ApplyBitmapToCanvas(WriteableBitmap bmp, Canvas canvas)
+        public void Execute()
         {
-            Image filledImage = new Image
+            RemoveExistingFillImage();
+            _currentImage = new Image
             {
-                Source = bmp,
-                Width = canvas.ActualWidth,
-                Height = canvas.ActualHeight
+                Source = _filledBitmap,
+                Width = _canvas.ActualWidth,
+                Height = _canvas.ActualHeight
             };
 
-            canvas.Children.Add(filledImage);
+            _canvas.Children.Add(_currentImage);
         }
 
-        private void FillEntireCanvas(Canvas canvas)
+        public void Undo()
         {
-            Canvas tempCanvas = CreateSolidCanvasCopy(canvas);
+            RemoveExistingFillImage();
 
-            BitmapSource bitmap = RenderCanvasToBitmap(tempCanvas);
-            if (bitmap == null) return;
-
-            Color targetColor = GetPixelColor(bitmap, new Point(1, 1)); 
-            Color fillColor = (_colorService.CurrentColor as SolidColorBrush)?.Color ?? Colors.White;
-
-            WriteableBitmap writable = new WriteableBitmap(bitmap);
-            FloodFill(writable, 1, 1, targetColor, fillColor);
-        }
-
-        private Canvas CreateSolidCanvasCopy(Canvas original)
-        {
-            Canvas temp = new Canvas { Width = original.Width, Height = original.Height };
-
-            foreach (UIElement element in original.Children)
+            if (_originalBitmap != null)
             {
-                if (element is Shape shape && !(shape is Line))
+                var originalImage = new Image
                 {
-                    temp.Children.Add(element);
+                    Source = _originalBitmap,
+                    Width = _canvas.ActualWidth,
+                    Height = _canvas.ActualHeight
+                };
+                _canvas.Children.Add(originalImage);
+                _currentImage = originalImage;
+            }
+        }
+
+        private void RemoveExistingFillImage()
+        {
+            if (_currentImage != null && _canvas.Children.Contains(_currentImage))
+            {
+                _canvas.Children.Remove(_currentImage);
+            }
+            for (int i = _canvas.Children.Count - 1; i >= 0; i--)
+            {
+                if (_canvas.Children[i] is Image image && image.Source is WriteableBitmap)
+                {
+                    _canvas.Children.RemoveAt(i);
+                    break;
                 }
             }
-
-            return temp;
         }
     }
 }

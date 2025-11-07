@@ -6,6 +6,7 @@ using System.Windows.Input;
 using System.Windows.Media;
 using System.Windows.Shapes;
 using lab_2_graphic_editor.Services;
+using lab_2_graphic_editor.Commands;
 
 namespace lab_2_graphic_editor.Models.Tools
 {
@@ -16,11 +17,10 @@ namespace lab_2_graphic_editor.Models.Tools
         private List<Ellipse> _nodeMarkers = new List<Ellipse>();
         private Canvas _currentCanvas;
 
-        // Для перетаскивания узлов
         private int _dragIndex = -1;
         private bool _isDragging = false;
+        private bool _isCurveCompleted = false;
 
-        // Настройки внешнего вида
         private Brush _strokeBrush = Brushes.Black;
         private double _strokeThickness = 2.0;
         private Brush _nodeFill = Brushes.White;
@@ -28,23 +28,27 @@ namespace lab_2_graphic_editor.Models.Tools
         private double _nodeRadius = 6.0;
 
         private readonly ColorService _colorService;
+        private readonly CommandService _commandService;
 
-        public CurveTool(ColorService colorService)
+        public CurveTool(ColorService colorService, CommandService commandService)
         {
             Name = "Curve Tool";
-            IconPath = "path_to_curve_icon.png";
             _colorService = colorService;
+            _commandService = commandService;
 
-            // Устанавливаем начальный цвет из ColorService
             _strokeBrush = _colorService.CurrentColor;
 
-            // Подписываемся на изменение цвета
             _colorService.ColorChanged += OnColorChanged;
         }
 
         public override void OnMouseDown(Point position, Canvas canvas)
         {
             _currentCanvas = canvas;
+
+            if (_isCurveCompleted)
+            {
+                StartNewCurve();
+            }
 
             int hitIndex = HitTestNode(position);
             if (hitIndex >= 0)
@@ -86,21 +90,18 @@ namespace lab_2_graphic_editor.Models.Tools
 
         public void CompleteCurve()
         {
-            if (_currentCanvas == null || _nodes.Count < 2)
+            if (_currentCanvas == null || _nodes.Count < 2 || _curvePolyline == null)
             {
+                CancelCurve();
                 return;
             }
 
-            foreach (var marker in _nodeMarkers)
-            {
-                _currentCanvas.Children.Remove(marker);
-            }
+            var completedCurve = _curvePolyline;
 
-            _nodes.Clear();
-            _nodeMarkers.Clear();
-            _dragIndex = -1;
-            _isDragging = false;
-            _curvePolyline = null;
+            CleanupTemporaryElements();
+            _isCurveCompleted = true;
+
+            _commandService.ExecuteAddElement(completedCurve, _currentCanvas);
         }
 
         public void FinishCurve()
@@ -112,18 +113,37 @@ namespace lab_2_graphic_editor.Models.Tools
         {
             if (_currentCanvas == null) return;
 
+            CleanupTemporaryElements();
+            _isCurveCompleted = false;
+        }
+
+        public void StartNewCurve()
+        {
+            CancelCurve();
+            _nodes.Clear();
+            _nodeMarkers.Clear();
+            _curvePolyline = null;
+            _isCurveCompleted = false;
+        }
+
+        private void CleanupTemporaryElements()
+        {
+            if (_currentCanvas == null) return;
+
             foreach (var marker in _nodeMarkers)
             {
-                _currentCanvas.Children.Remove(marker);
+                if (_currentCanvas.Children.Contains(marker))
+                {
+                    _currentCanvas.Children.Remove(marker);
+                }
             }
 
-            if (_curvePolyline != null)
+            if (_curvePolyline != null && _currentCanvas.Children.Contains(_curvePolyline) && !_isCurveCompleted)
             {
                 _currentCanvas.Children.Remove(_curvePolyline);
-                _curvePolyline = null;
+                _curvePolyline = null; 
             }
 
-            _nodes.Clear();
             _nodeMarkers.Clear();
             _dragIndex = -1;
             _isDragging = false;
@@ -269,6 +289,18 @@ namespace lab_2_graphic_editor.Models.Tools
                 marker.Stroke = stroke;
                 marker.Width = radius * 2;
                 marker.Height = radius * 2;
+            }
+        }
+
+        public void ForceCompleteCurve()
+        {
+            if (_nodes.Count >= 2 && _curvePolyline != null)
+            {
+                CompleteCurve();
+            }
+            else
+            {
+                CancelCurve();
             }
         }
 

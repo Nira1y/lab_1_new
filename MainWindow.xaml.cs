@@ -25,6 +25,8 @@ namespace lab_2_graphic_editor
         private TextTool _textTool;
         private TextViewModel _textViewModel;
         private FillTool _fillTool;
+        private CommandService _commandService;
+
 
         public MainWindow()
         {
@@ -34,11 +36,11 @@ namespace lab_2_graphic_editor
             _colorService = new ColorService();
 
             _statusVM.ColorChanged += OnColorChanged;
-
+            _commandService = new CommandService();
             _toolManager = new ToolManager();
-            _cursorTool = new CursorTool(_colorService);
-            _toolManager.CurrentTool = new BrushTool(_colorService);
-            _fillTool = new FillTool(_colorService);
+            _cursorTool = new CursorTool(_colorService, _commandService);
+            _toolManager.CurrentTool = new BrushTool(_colorService, _commandService);
+            _fillTool = new FillTool(_colorService, _commandService);
             _fileService = new FileService();
 
             _textViewModel = new TextViewModel();
@@ -64,7 +66,13 @@ namespace lab_2_graphic_editor
                     e.Handled = true;
                 }
             };
+            _commandService.CanExecuteChanged += (s, e) =>
+            {
+                // Обновить состояние кнопок
+                CommandManager.InvalidateRequerySuggested();
+            };
 
+            // Обработка горячих клавиш
             this.KeyDown += MainWindow_KeyDown;
 
             this.Loaded += (s, e) => { this.Focus(); };
@@ -104,6 +112,16 @@ namespace lab_2_graphic_editor
             if (e.Key == Key.Enter && _toolManager.CurrentTool is CurveTool curveTool)
             {
                 curveTool.FinishCurve();
+                e.Handled = true;
+            }
+            if (e.Key == Key.Z && (Keyboard.Modifiers & ModifierKeys.Control) != 0)
+            {
+                _commandService.Undo();
+                e.Handled = true;
+            }
+            else if (e.Key == Key.Y && (Keyboard.Modifiers & ModifierKeys.Control) != 0)
+            {
+                _commandService.Redo();
                 e.Handled = true;
             }
 
@@ -147,6 +165,15 @@ namespace lab_2_graphic_editor
                 DrawingArea.DrawingCanvas.CaptureMouse();
             }
         }
+        private void UndoButton_Click(object sender, RoutedEventArgs e)
+        {
+            _commandService.Undo();
+        }
+
+        private void RedoButton_Click(object sender, RoutedEventArgs e)
+        {
+            _commandService.Redo();
+        }
 
         private void Canvas_MouseMove(object sender, MouseEventArgs e)
         {
@@ -180,56 +207,56 @@ namespace lab_2_graphic_editor
         private void SelectBrush_Click(object sender, RoutedEventArgs e)
         {
             _cursorTool?.ClearSelection();
-            _toolManager.CurrentTool = new BrushTool(_colorService);
+            _toolManager.CurrentTool = new BrushTool(_colorService, _commandService);
             _statusVM.CurrentTool = "Инструмент: Кисть";
         }
 
         private void SelectLine_Click(object sender, RoutedEventArgs e)
         {
             _cursorTool?.ClearSelection();
-            _toolManager.CurrentTool = new LineTool(_colorService);
+            _toolManager.CurrentTool = new LineTool(_colorService, _commandService);
             _statusVM.CurrentTool = "Инструмент: Линия";
         }
 
         private void SelectRectangle_Click(object sender, RoutedEventArgs e)
         {
             _cursorTool?.ClearSelection();
-            _toolManager.CurrentTool = new RectangleTool(_colorService);
+            _toolManager.CurrentTool = new RectangleTool(_colorService, _commandService);
             _statusVM.CurrentTool = "Инструмент: Прямоугольник";
         }
 
         private void SelectRectangleFill_Click(object sender, RoutedEventArgs e)
         {
             _cursorTool?.ClearSelection();
-            _toolManager.CurrentTool = new RectangleTool(_colorService, true);
+            _toolManager.CurrentTool = new RectangleTool(_colorService, _commandService, true);
             _statusVM.CurrentTool = "Инструмент: Прямоугольник (с заливкой)";
         }
 
         private void SelectEllipse_Click(object sender, RoutedEventArgs e)
         {
             _cursorTool?.ClearSelection();
-            _toolManager.CurrentTool = new EllipseTool(_colorService);
+            _toolManager.CurrentTool = new EllipseTool(_colorService, _commandService);
             _statusVM.CurrentTool = "Инструмент: Эллипс";
         }
 
         private void SelectEllipseFill_Click(object sender, RoutedEventArgs e)
         {
             _cursorTool?.ClearSelection();
-            _toolManager.CurrentTool = new EllipseTool(_colorService, true);
+            _toolManager.CurrentTool = new EllipseTool(_colorService, _commandService, true);
             _statusVM.CurrentTool = "Инструмент: Эллипс (с заливкой)";
         }
 
         private void SelectTriangle_Click(object sender, RoutedEventArgs e)
         {
             _cursorTool?.ClearSelection();
-            _toolManager.CurrentTool = new TriangleTool(_colorService);
+            _toolManager.CurrentTool = new TriangleTool(_colorService, _commandService);
             _statusVM.CurrentTool = "Инструмент: Треугольник";
         }
 
         private void SelectTriangleFill_Click(object sender, RoutedEventArgs e)
         {
             _cursorTool?.ClearSelection();
-            _toolManager.CurrentTool = new TriangleTool(_colorService, true);
+            _toolManager.CurrentTool = new TriangleTool(_colorService, _commandService, true);
             _statusVM.CurrentTool = "Инструмент: Треугольник (с заливкой)";
         }
         private void SelectText_Click(object sender, RoutedEventArgs e)
@@ -244,7 +271,7 @@ namespace lab_2_graphic_editor
         private void SelectEraser_Click(object sender, RoutedEventArgs e)
         {
             _cursorTool?.ClearSelection();
-            _toolManager.CurrentTool = new EraserTool();
+            _toolManager.CurrentTool = new EraserTool(_commandService);
             _statusVM.CurrentTool = "Инструмент: Ластик";
         }
         private void SelectFill_Click(object sender, RoutedEventArgs e)
@@ -256,7 +283,7 @@ namespace lab_2_graphic_editor
         private void SelectCurve_Click(object sender, RoutedEventArgs e)
         {
             _cursorTool?.ClearSelection();
-            _toolManager.CurrentTool = new CurveTool(_colorService);
+            _toolManager.CurrentTool = new CurveTool(_colorService, _commandService);
             _statusVM.CurrentTool = "Инструмент: Кривая";
         }
         #endregion
