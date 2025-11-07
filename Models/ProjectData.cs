@@ -21,6 +21,7 @@ namespace lab_2_graphic_editor.Models
         public bool IsFilled { get; set; }
         public List<PointData> BrushPoints { get; set; } = new List<PointData>();
         public double BrushSize { get; set; } = 3;
+        public bool IsCurve { get; set; } = false;
     }
 
     public class TextData

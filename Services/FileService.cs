@@ -282,6 +282,16 @@ namespace lab_2_graphic_editor.Services
                     }
                     break;
 
+                case Polyline polyline:
+                    shapeData.Type = "Curve";
+                    shapeData.IsCurve = true;
+
+                    foreach (var point in polyline.Points)
+                    {
+                        shapeData.Points.Add(new PointData(point.X, point.Y));
+                    }
+                    break;
+
                 default:
                     return null;
             }
@@ -299,6 +309,7 @@ namespace lab_2_graphic_editor.Services
                 "Rectangle" => new Rectangle(),
                 "Ellipse" => new Ellipse(),
                 "Triangle" => new Polygon(),
+                "Curve" => new Polyline(),
                 _ => null
             };
 
@@ -399,6 +410,15 @@ namespace lab_2_graphic_editor.Services
                     {
                         polygon.Fill = Brushes.Transparent;
                     }
+                    break;
+                case Polyline polyline when shapeData.Points.Count > 0:
+                    var _points = new PointCollection();
+                    foreach (var pointData in shapeData.Points)
+                    {
+                        _points.Add(new System.Windows.Point(pointData.X, pointData.Y));
+                    }
+                    polyline.Points = _points;
+                    polyline.StrokeLineJoin = PenLineJoin.Round;
                     break;
 
                 default:

@@ -98,10 +98,26 @@ namespace lab_2_graphic_editor.Models.Tools
 
             var completedCurve = _curvePolyline;
 
+            var curvePoints = new PointCollection();
+            foreach (var point in _curvePolyline.Points)
+            {
+                curvePoints.Add(point);
+            }
+
+            var finalCurve = new Polyline
+            {
+                Stroke = _strokeBrush,
+                StrokeThickness = _strokeThickness,
+                StrokeLineJoin = PenLineJoin.Round,
+                Points = curvePoints
+            };
+
             CleanupTemporaryElements();
             _isCurveCompleted = true;
 
-            _commandService.ExecuteAddElement(completedCurve, _currentCanvas);
+            _commandService.ExecuteAddElement(finalCurve, _currentCanvas);
+
+            _curvePolyline = null;
         }
 
         public void FinishCurve()
