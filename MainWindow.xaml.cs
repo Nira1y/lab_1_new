@@ -133,19 +133,7 @@ namespace lab_2_graphic_editor
                     cursorToolBack.SendToBack();
                     e.Handled = true;
                 }
-                else if (e.Key == Key.G && _toolManager.CurrentTool is CursorTool cursorToolUngroup)
-                {
-                    cursorToolUngroup.UngroupSelectedElements();
-                    e.Handled = true;
-                }
-            }
-            else if (Keyboard.Modifiers == ModifierKeys.Control)
-            {
-                if (e.Key == Key.G && _toolManager.CurrentTool is CursorTool cursorToolGroup)
-                {
-                    cursorToolGroup.GroupSelectedElements();
-                    e.Handled = true;
-                }
+                
             }
         }
 
@@ -268,7 +256,7 @@ namespace lab_2_graphic_editor
         private void SelectCurve_Click(object sender, RoutedEventArgs e)
         {
             _cursorTool?.ClearSelection();
-            _toolManager.CurrentTool = new CurveTool();
+            _toolManager.CurrentTool = new CurveTool(_colorService);
             _statusVM.CurrentTool = "Инструмент: Кривая";
         }
         #endregion
@@ -419,7 +407,7 @@ namespace lab_2_graphic_editor
         }
 
         #endregion
-        #region Z-Order и Группировка
+        #region Z-Order
 
         private void BringToFront_Click(object sender, RoutedEventArgs e)
         {
@@ -434,22 +422,6 @@ namespace lab_2_graphic_editor
             if (_toolManager.CurrentTool is CursorTool cursorTool)
             {
                 cursorTool.SendToBack();
-            }
-        }
-
-        private void GroupElements_Click(object sender, RoutedEventArgs e)
-        {
-            if (_toolManager.CurrentTool is CursorTool cursorTool)
-            {
-                cursorTool.GroupSelectedElements();
-            }
-        }
-
-        private void UngroupElements_Click(object sender, RoutedEventArgs e)
-        {
-            if (_toolManager.CurrentTool is CursorTool cursorTool)
-            {
-                cursorTool.UngroupSelectedElements();
             }
         }
 

@@ -35,7 +35,6 @@ namespace lab_2_graphic_editor.Services
                         Math.Abs(line.Y2 - line.Y1)
                     );
 
-                    // Для линий учитываем трансформацию только если она есть
                     if (line.RenderTransform != null && !line.RenderTransform.Value.IsIdentity)
                     {
                         return line.RenderTransform.TransformBounds(lineRect);
@@ -45,7 +44,6 @@ namespace lab_2_graphic_editor.Services
                 }
                 else if (shape is Polygon polygon)
                 {
-                    // Для полигонов учитываем трансформацию только если она есть
                     Rect polygonRect = GetPolygonBoundsWithoutTransform(polygon);
                     if (polygon.RenderTransform != null && !polygon.RenderTransform.Value.IsIdentity)
                     {
@@ -53,10 +51,35 @@ namespace lab_2_graphic_editor.Services
                     }
                     return polygonRect;
                 }
+                else if (shape is Polyline polyline)
+                {
+                    if (polyline.Points.Count == 0) return new Rect(0, 0, 0, 0);
+
+                    double minX = double.MaxValue;
+                    double maxX = double.MinValue;
+                    double minY = double.MaxValue;
+                    double maxY = double.MinValue;
+
+                    foreach (Point point in polyline.Points)
+                    {
+                        if (point.X < minX) minX = point.X;
+                        if (point.X > maxX) maxX = point.X;
+                        if (point.Y < minY) minY = point.Y;
+                        if (point.Y > maxY) maxY = point.Y;
+                    }
+
+                    Rect polylineRect = new Rect(minX, minY, maxX - minX, maxY - minY);
+
+                    if (polyline.RenderTransform != null && !polyline.RenderTransform.Value.IsIdentity)
+                    {
+                        return polyline.RenderTransform.TransformBounds(polylineRect);
+                    }
+
+                    return polylineRect;
+                }
                 else
                 {
-                    // Для обычных фигур (Rectangle, Ellipse) НЕ учитываем трансформацию
-                    // чтобы рамка выделения не "улетала"
+
                     double left = Canvas.GetLeft(element);
                     double top = Canvas.GetTop(element);
                     double width = (element as FrameworkElement)?.Width ?? 0;
@@ -88,7 +111,6 @@ namespace lab_2_graphic_editor.Services
 
             return new Rect(minX, minY, maxX - minX, maxY - minY);
         }
-
 
         public void ResizeElement(UIElement element, ResizeHandle handle, Point startPoint, Point newPoint)
         {

@@ -312,20 +312,31 @@ namespace lab_2_graphic_editor.Tools
 
         private void FillEntireCanvas(Canvas canvas)
         {
-            if (_canvasBackground != null && canvas.Children.Contains(_canvasBackground))
+            Canvas tempCanvas = CreateSolidCanvasCopy(canvas);
+
+            BitmapSource bitmap = RenderCanvasToBitmap(tempCanvas);
+            if (bitmap == null) return;
+
+            Color targetColor = GetPixelColor(bitmap, new Point(1, 1)); 
+            Color fillColor = (_colorService.CurrentColor as SolidColorBrush)?.Color ?? Colors.White;
+
+            WriteableBitmap writable = new WriteableBitmap(bitmap);
+            FloodFill(writable, 1, 1, targetColor, fillColor);
+        }
+
+        private Canvas CreateSolidCanvasCopy(Canvas original)
+        {
+            Canvas temp = new Canvas { Width = original.Width, Height = original.Height };
+
+            foreach (UIElement element in original.Children)
             {
-                canvas.Children.Remove(_canvasBackground);
+                if (element is Shape shape && !(shape is Line))
+                {
+                    temp.Children.Add(element);
+                }
             }
 
-            _canvasBackground = new Rectangle
-            {
-                Width = canvas.ActualWidth,
-                Height = canvas.ActualHeight,
-                Fill = _colorService.CurrentColor,
-                StrokeThickness = 0
-            };
-
-            canvas.Children.Insert(0, _canvasBackground);
+            return temp;
         }
     }
 }

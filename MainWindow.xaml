@@ -50,10 +50,6 @@
                 <MenuItem Header="На задний план" Click="SendToBack_Click" 
                   InputGestureText="Ctrl+Shift+Down"/>
                 <Separator/>
-                <MenuItem Header="Сгруппировать" Click="GroupElements_Click" 
-                  InputGestureText="Ctrl+G"/>
-                <MenuItem Header="Разгруппировать" Click="UngroupElements_Click" 
-                  InputGestureText="Ctrl+Shift+G"/>
             </MenuItem>
         </Menu>
         <ToolBar DockPanel.Dock="Top" Background="LightGray">

@@ -5,6 +5,7 @@ using System.Windows.Controls;
 using System.Windows.Input;
 using System.Windows.Media;
 using System.Windows.Shapes;
+using lab_2_graphic_editor.Services;
 
 namespace lab_2_graphic_editor.Models.Tools
 {
@@ -26,10 +27,19 @@ namespace lab_2_graphic_editor.Models.Tools
         private Brush _nodeStroke = Brushes.Red;
         private double _nodeRadius = 6.0;
 
-        public CurveTool()
+        private readonly ColorService _colorService;
+
+        public CurveTool(ColorService colorService)
         {
             Name = "Curve Tool";
             IconPath = "path_to_curve_icon.png";
+            _colorService = colorService;
+
+            // Устанавливаем начальный цвет из ColorService
+            _strokeBrush = _colorService.CurrentColor;
+
+            // Подписываемся на изменение цвета
+            _colorService.ColorChanged += OnColorChanged;
         }
 
         public override void OnMouseDown(Point position, Canvas canvas)
@@ -81,7 +91,6 @@ namespace lab_2_graphic_editor.Models.Tools
                 return;
             }
 
-
             foreach (var marker in _nodeMarkers)
             {
                 _currentCanvas.Children.Remove(marker);
@@ -92,7 +101,6 @@ namespace lab_2_graphic_editor.Models.Tools
             _dragIndex = -1;
             _isDragging = false;
             _curvePolyline = null;
-
         }
 
         public void FinishCurve()
@@ -229,6 +237,13 @@ namespace lab_2_graphic_editor.Models.Tools
             return new Point(x, y);
         }
 
+        private void OnColorChanged(Brush newColor)
+        {
+            _strokeBrush = newColor;
+            if (_curvePolyline != null)
+                _curvePolyline.Stroke = newColor;
+        }
+
         public void SetStrokeBrush(Brush brush)
         {
             _strokeBrush = brush;
@@ -255,6 +270,11 @@ namespace lab_2_graphic_editor.Models.Tools
                 marker.Width = radius * 2;
                 marker.Height = radius * 2;
             }
+        }
+
+        ~CurveTool()
+        {
+            _colorService.ColorChanged -= OnColorChanged;
         }
     }
 }
